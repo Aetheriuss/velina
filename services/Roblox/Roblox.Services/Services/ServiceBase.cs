@@ -225,8 +225,13 @@ namespace Roblox.Services
             }
             // quote table name
             tableName = "\"" + tableName + "\"";
-            var query = $"UPDATE {tableName} SET {string.Join(",", updateColumns)} WHERE {foreignKeyName} = {foreignKey}";
-            await db.ExecuteAsync(query, obj);
+            // foreignKeyName is validated against the real column list above (safe to interpolate as
+            // an identifier); the foreignKey VALUE must be bound as a parameter, not interpolated,
+            // or any caller passing user input would be SQL-injectable (security finding H14).
+            var parameters = new DynamicParameters(obj);
+            parameters.Add("__fk", foreignKey);
+            var query = $"UPDATE {tableName} SET {string.Join(",", updateColumns)} WHERE {foreignKeyName} = :__fk";
+            await db.ExecuteAsync(query, parameters);
         }
 
         public async Task<IEnumerable<TReturnType>> MultiGetAsync<TReturnType, TSearchType>(string tableName, string columnToSearchOn, IEnumerable<string> columns, IEnumerable<TSearchType> items, string sqlOperator = "=")
@@ -243,7 +248,10 @@ namespace Roblox.Services
             var itemsList = items.ToList();
             foreach (var item in columnsList)
             {
-                if (!columnsList.Contains(item))
+                // Was `!columnsList.Contains(item)` — a no-op that tested the list against itself, so
+                // the SELECT column list was effectively unvalidated (security finding H14). Validate
+                // each requested column against the real table columns instead.
+                if (!tableData.Contains(item))
                 {
                     throw new Exception("Column " + item + " does not exist in table " + tableName);
                 }
