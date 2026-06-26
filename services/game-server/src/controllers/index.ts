@@ -13,6 +13,21 @@ import sharp = require('sharp');
 import uuid = require('uuid');
 import http = require('http');
 let myIp = 'UNKNOWN';
+
+// Escape a string for safe embedding inside a SINGLE-QUOTED Lua string literal that itself sits
+// inside an XML CDATA section of the RCC SOAP request (security finding H9). The previous code did
+// `.replace(\`'\`, \`\\'\`)` which (a) lacked the /g flag so only the FIRST quote was escaped and
+// (b) ignored backslashes, newlines and the CDATA terminator ]]> — letting crafted avatar data
+// break out of the Lua string and inject arbitrary Lua/markup into the render job.
+const escapeAvatarJsonForLua = (json: string): string => {
+	return json
+		.replace(/\\/g, '\\\\')   // backslash first, so we don't double-escape our own escapes
+		.replace(/'/g, "\\'")     // single quote — would otherwise close the Lua literal
+		.replace(/\r/g, '\\r')
+		.replace(/\n/g, '\\n')
+		.replace(/\]\]>/g, ']]');  // neutralize the CDATA terminator at the XML layer
+};
+
 const dockerEnabled: boolean = !conf.dockerDisabled;
 console.log('[info] dockerEnabled:',dockerEnabled);
 const rccPort = conf.rccPort || 63914; // default: 64989
@@ -921,7 +936,7 @@ export default class CommandHandler extends StdExceptions {
 				// set user id
 				.replace(/65789275746246/g, user.userId.toString())
 				// set user avatar json
-				.replace(/JSON_AVATAR/g, JSON.stringify(user).replace(`'`, `\\'`))
+				.replace(/JSON_AVATAR/g, escapeAvatarJsonForLua(JSON.stringify(user)))
 				.replace(/_X_RES_/g, (420 * resolutionMultiplier.userHeadshot).toString())
 				.replace(/_Y_RES_/g, (420 * resolutionMultiplier.userHeadshot).toString())
 		, uuid.v4());
@@ -944,7 +959,7 @@ export default class CommandHandler extends StdExceptions {
 				// set user id
 				.replace(/65789275746246/g, user.userId.toString())
 				// set user avatar json
-				.replace(/JSON_AVATAR/g, JSON.stringify(user).replace(`'`, `\\'`))
+				.replace(/JSON_AVATAR/g, escapeAvatarJsonForLua(JSON.stringify(user)))
 				.replace(/_X_RES_/g, (420 * resolutionMultiplier.userThumbnail).toString())
 				.replace(/_Y_RES_/g, (420 * resolutionMultiplier.userThumbnail).toString())
 		, uuid.v4());

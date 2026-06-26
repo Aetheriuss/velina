@@ -1,37 +1,33 @@
 import axios from 'axios';
 import getConfig from 'next/config';
-import { fromUrl, parseDomain, ParseResultType } from 'parse-domain';
 import { getBaseUrl } from '../../lib/request';
 
-// Host of the public site (e.g. "velina.lol"), derived from config instead of hardcoded.
-const getSiteHostname = () => {
-  try { return new URL(getBaseUrl()).hostname; } catch (e) { return ''; }
+// The proxy may ONLY forward to the exact configured origin (protocol + host:port).
+// This is the SSRF lockdown (security finding H6): the previous check compared only the
+// registrable domain, ignoring scheme (file://, gopher://), port, userinfo (user:pass@),
+// and allowing arbitrary subdomains. Exact-origin matching blocks all of those, plus IP
+// literals and private/loopback targets (none of which equal our public host).
+const getAllowedOrigin = () => {
+  try {
+    const u = new URL(getBaseUrl());
+    return { protocol: u.protocol, host: u.host, hostname: u.hostname };
+  } catch (e) {
+    return null;
+  }
 };
-const siteHostname = getSiteHostname();
+const allowedOrigin = getAllowedOrigin();
+const siteHostname = allowedOrigin ? allowedOrigin.hostname : '';
 
 const UrlUtilities = (() => {
-  const getDomainFromUrl = (url) => {
-    const baseDomainParsed = parseDomain(fromUrl(url));
-    if (baseDomainParsed.type === ParseResultType.Listed) {
-      return baseDomainParsed.domain + '.' + baseDomainParsed.topLevelDomains.join('.');
-    } else if (baseDomainParsed.type === ParseResultType.Ip) {
-      return baseDomainParsed.hostname;
-      console.log(baseDomainParsed.hostname)
-    }else if (baseDomainParsed.type === ParseResultType.Reserved) {
-      if (baseDomainParsed.hostname === siteHostname) {
-        return siteHostname;
-      }
-      throw new Error('The only allowed reserved domain type is ' + siteHostname + ', got ' + baseDomainParsed.hostname);
-    } else {
-      //throw new Error('Unsupported domain type: ' + baseDomainParsed.type);
-    }
-  }
-  const baseWithDomainAndTld = getDomainFromUrl(getBaseUrl())
-
   return {
     isSafe: (rawUrl) => {
-      const parsedWithDomainAndTld = getDomainFromUrl(rawUrl)
-      return parsedWithDomainAndTld === baseWithDomainAndTld;
+      if (typeof rawUrl !== 'string' || !allowedOrigin) return false;
+      let parsed;
+      try { parsed = new URL(rawUrl); } catch (e) { return false; }
+      if (parsed.protocol !== allowedOrigin.protocol) return false;      // blocks file:/gopher:/http-vs-https
+      if (parsed.host !== allowedOrigin.host) return false;              // exact host:port — blocks other hosts, IPs, subdomains
+      if (parsed.username !== '' || parsed.password !== '') return false; // blocks user:pass@ confusion
+      return true;
     },
   }
 })();
@@ -51,19 +47,21 @@ const actualHandler = async (req, res) => {
     let requestHeaders = {
       cookie: req.headers['cookie'] || '',
       'x-csrf-token': req.headers['x-csrf-token'] || '',
-      'user-agent': req.headers['user-agent'],
+      'user-agent': req.headers['user-agent'] || '',
     }
+    // Forward only an explicit allowlist of client headers (security finding H6) — the previous
+    // denylist loop forwarded nearly everything.
+    const FORWARD_ALLOWLIST = ['content-type', 'accept', 'accept-language', 'x-csrf-token'];
+    for (const key of FORWARD_ALLOWLIST) {
+      if (typeof req.headers[key] !== 'undefined') {
+        requestHeaders[key] = req.headers[key];
+      }
+    }
+    // The internal authorization secret is added AFTER the destination is validated to be our own
+    // origin (isSafe above), so it can never be forwarded to a user-controlled host.
     const authHeaderValue = getConfig().serverRuntimeConfig.backend.authorization;
     if (typeof authHeaderValue === 'string')
       requestHeaders[getConfig().serverRuntimeConfig.backend.authorizationHeader || 'authorization'] = authHeaderValue;
-
-    // TODO: whitelisted headers might be safer...
-    for (const key in req.headers) {
-      if (key === 'host' || key === 'connection' || key === 'accept-encoding' || key === 'host') {
-        continue;
-      }
-      requestHeaders[key] = req.headers[key];
-    }
     const result = await axios.request({
       method: req.method,
       url: fullUrl,
