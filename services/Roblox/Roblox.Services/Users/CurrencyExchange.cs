@@ -389,6 +389,11 @@ public class CurrencyExchangeService : ServiceBase, IService
         logger.Info(
             $"new order created. userId={userId} amount={amount} rate={exchangeRate1K} sourceCurrency={sourceCurrency} isMarket={isMarketOrder}");
         logger.Info($"attempt decrement from user balance: {amount} {sourceCurrency.ToString()}");
+        // Hold the per-user economy lock for the whole order placement (security finding H5 — the
+        // exchange path previously took no economy lock). Acquired before any per-order lock so the
+        // ordering stays economy->order and cannot deadlock against the order-locking buy loop.
+        using var ecLock = ServiceProvider.GetOrCreate<EconomyService>(this);
+        await using var economyLock = await ecLock.AcquireEconomyLock(Roblox.Models.Assets.CreatorType.User, userId);
         await InTransaction(async (trx) =>
         {
             // Confirm user has enough

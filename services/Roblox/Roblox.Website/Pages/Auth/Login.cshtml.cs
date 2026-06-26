@@ -61,14 +61,8 @@ public class Login : RobloxPageModel
             sessionId = sess,
             createdAt = DateTimeOffset.Now.ToUnixTimeSeconds(),
         });
-        HttpContext.Response.Cookies.Append(Middleware.SessionMiddleware.CookieName, sessionCookie, new CookieOptions()
-        {
-            Secure = true,
-            Expires = DateTimeOffset.Now.Add(TimeSpan.FromDays(364)),
-            IsEssential = true,
-            Path = "/",
-            SameSite = SameSiteMode.Lax,
-        });
+        // HttpOnly + Secure via the shared helper (security finding H10).
+        Roblox.Website.Lib.SessionCookie.Append(HttpContext.Response, sessionCookie);
     }
 
     private static async Task PreventTimingExploits(Stopwatch watch)

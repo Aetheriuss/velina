@@ -51,9 +51,11 @@ export default function handler(req, res) {
     });
     return
   }
+  // Secure in production only (so local http dev can still set cookies) — security finding H10/FE-03.
+  const secureAttr = process.env.NODE_ENV === 'production' ? '; Secure' : '';
   if (!csrfValid(req)) {
     const newCsrf = generateCsrf();
-    res.setHeader('Set-Cookie', `.LoginCSRF=${newCsrf.signed}; Max-Age=${300}; Path=/; HttpOnly`);
+    res.setHeader('Set-Cookie', `.LoginCSRF=${newCsrf.signed}; Max-Age=${300}; Path=/; HttpOnly; SameSite=Lax${secureAttr}`);
     res.setHeader('x-csrf-token', newCsrf.csrf);
     return res.status(403).json({
       success: false,
@@ -68,7 +70,7 @@ export default function handler(req, res) {
       });
       return;
     }
-    const setCookieRequest = `.ROBLOSECURITY=${cookie}; Max-Age=${86400 * 365}; Path=/; HttpOnly; SameSite=Lax`;
+    const setCookieRequest = `.ROBLOSECURITY=${cookie}; Max-Age=${86400 * 365}; Path=/; HttpOnly; SameSite=Lax${secureAttr}`;
     res.setHeader('Set-Cookie', setCookieRequest);
     res.status(200).json({
       success: true,

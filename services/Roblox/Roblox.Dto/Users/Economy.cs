@@ -5,8 +5,10 @@ namespace Roblox.Dto.Users;
 
 public class UserEconomy
 {
-    public int robux { get; set; }
-    public int tickets { get; set; }
+    // 64-bit to match the ledger (user_transaction.amount is long) and avoid overflow/
+    // truncation of large balances (security finding H12). Backed by bigint columns.
+    public long robux { get; set; }
+    public long tickets { get; set; }
 }
 
 public class SummaryEntryDb

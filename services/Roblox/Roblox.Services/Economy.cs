@@ -105,28 +105,33 @@ public class EconomyService : ServiceBase, IService
             });
     }
     
-    private async Task UnsafeDecrementUserRobux(long userId, long amount)
+    // Atomic conditional debit: the WHERE ... >= :amt guard means a concurrent request can
+    // never drive the balance negative even if the Redis economy lock expires mid-transaction
+    // (security finding H5). Returns true only when exactly one row was debited.
+    private async Task<bool> TryDecrementUserRobux(long userId, long amount)
     {
         if (amount < 0)
             throw new ArgumentException("Amount must be zero or more");
-        await db.ExecuteAsync("UPDATE user_economy SET balance_robux = balance_robux - :amt WHERE user_id = :user_id",
+        var rows = await db.ExecuteAsync("UPDATE user_economy SET balance_robux = balance_robux - :amt WHERE user_id = :user_id AND balance_robux >= :amt",
             new
             {
                 user_id = userId,
                 amt = amount,
             });
+        return rows == 1;
     }
-    
-    private async Task UnsafeDecrementUserTickets(long userId, long amount)
+
+    private async Task<bool> TryDecrementUserTickets(long userId, long amount)
     {
         if (amount < 0)
             throw new ArgumentException("Amount must be zero or more");
-        await db.ExecuteAsync("UPDATE user_economy SET balance_tickets = balance_tickets - :amt WHERE user_id = :user_id",
+        var rows = await db.ExecuteAsync("UPDATE user_economy SET balance_tickets = balance_tickets - :amt WHERE user_id = :user_id AND balance_tickets >= :amt",
             new
             {
                 user_id = userId,
                 amt = amount,
             });
+        return rows == 1;
     }
     
     private async Task UnsafeIncrementGroupRobux(long groupId, long amount)
@@ -153,28 +158,30 @@ public class EconomyService : ServiceBase, IService
             });
     }
     
-    private async Task UnsafeDecrementGroupRobux(long groupId, long amount)
+    private async Task<bool> TryDecrementGroupRobux(long groupId, long amount)
     {
         if (amount < 0)
             throw new ArgumentException("Amount must be zero or more");
-        await db.ExecuteAsync("UPDATE group_economy SET balance_robux = balance_robux - :amt WHERE group_id = :group_id",
+        var rows = await db.ExecuteAsync("UPDATE group_economy SET balance_robux = balance_robux - :amt WHERE group_id = :group_id AND balance_robux >= :amt",
             new
             {
                 group_id = groupId,
                 amt = amount,
             });
+        return rows == 1;
     }
-    
-    private async Task UnsafeDecrementGroupTickets(long groupId, long amount)
+
+    private async Task<bool> TryDecrementGroupTickets(long groupId, long amount)
     {
         if (amount < 0)
             throw new ArgumentException("Amount must be zero or more");
-        await db.ExecuteAsync("UPDATE group_economy SET balance_tickets = balance_tickets - :amt WHERE group_id = :group_id",
+        var rows = await db.ExecuteAsync("UPDATE group_economy SET balance_tickets = balance_tickets - :amt WHERE group_id = :group_id AND balance_tickets >= :amt",
             new
             {
                 group_id = groupId,
                 amt = amount,
             });
+        return rows == 1;
     }
     
     [Obsolete("Use the overload with a creatorType instead")]
@@ -234,45 +241,34 @@ public class EconomyService : ServiceBase, IService
     
     public async Task DecrementCurrency(CreatorType creatorType, long creatorId, CurrencyType currency, long amount)
     {
-        long newBalance = -1;
+        bool ok;
         if (currency == CurrencyType.Robux)
         {
-            if (creatorType == CreatorType.User)
+            ok = creatorType switch
             {
-                await UnsafeDecrementUserRobux(creatorId, amount);
-                newBalance = (await GetUserBalance(creatorId)).robux;
-            }else if (creatorType == CreatorType.Group)
-            {
-                await UnsafeDecrementGroupRobux(creatorId, amount);
-                newBalance = (await GetGroupBalance(creatorId)).robux;
-            }
-            else
-            {
-                throw new Exception("Bad creatorType");
-            }
-        }else if (currency == CurrencyType.Tickets)
+                CreatorType.User => await TryDecrementUserRobux(creatorId, amount),
+                CreatorType.Group => await TryDecrementGroupRobux(creatorId, amount),
+                _ => throw new Exception("Bad creatorType"),
+            };
+        }
+        else if (currency == CurrencyType.Tickets)
         {
-            if (creatorType == CreatorType.User)
+            ok = creatorType switch
             {
-                await UnsafeDecrementUserTickets(creatorId, amount);
-                newBalance = (await GetUserBalance(creatorId)).tickets;
-            }else if (creatorType == CreatorType.Group)
-            {
-                await UnsafeDecrementGroupTickets(creatorId, amount);
-                newBalance = (await GetGroupBalance(creatorId)).tickets;
-            }
-            else
-            {
-                throw new Exception("Bad creatorType");
-            }
+                CreatorType.User => await TryDecrementUserTickets(creatorId, amount),
+                CreatorType.Group => await TryDecrementGroupTickets(creatorId, amount),
+                _ => throw new Exception("Bad creatorType"),
+            };
         }
         else
         {
             throw new NotImplementedException();
         }
-        
-        if (newBalance < 0)
-            throw new Exception("After increment, new balance was less than zero: " + newBalance);
+
+        // 0 rows => the atomic guard rejected the debit (insufficient funds, possibly because a
+        // concurrent request already spent the balance). Fail closed so the transaction rolls back.
+        if (!ok)
+            throw new LogicException(FailType.Unknown, 0, "You do not have enough currency to perform this action.");
     }
     
     
