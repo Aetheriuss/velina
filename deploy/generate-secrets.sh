@@ -35,6 +35,8 @@ GAME_SERVER_AUTHORIZATION=$(tok)
 ASSET_VALIDATION_SECRET=$(tok)  # shared: AssetValidation:Authorization == validator ASSET_VALIDATION_AUTHORIZATION env
 APP_GUARD_SECRET=$(tok)         # appsettings "Authorization" (admin/internal guard middleware)
 JWT_SESSIONS_SECRET=$(jwt)
+CSRF_KEY=$(jwt)                 # appsettings "Csrf:Key" — persist so CSRF cookies survive restarts (P1-2)
+GAMESERVER_TICKET_KEY=$(jwt)    # appsettings "GameServer:TicketJwtKey" — persist so game-join tickets survive restarts (P1-2)
 FRONTEND_CSRF_KEY=$(openssl rand -base64 64 | tr -d '\n')
 
 cat <<EOF
@@ -52,7 +54,9 @@ cat <<EOF
   "RccAuthorization": "${RENDER_RCC_SECRET}",
   "Render": { "Authorization": "${RENDER_RCC_SECRET}", ... },
   "AssetValidation": { "Authorization": "${ASSET_VALIDATION_SECRET}", ... },
-  "Jwt": { "Sessions": "${JWT_SESSIONS_SECRET}" }
+  "Jwt": { "Sessions": "${JWT_SESSIONS_SECRET}" },
+  "Csrf": { "Key": "${CSRF_KEY}" },
+  "GameServer": { "TicketJwtKey": "${GAMESERVER_TICKET_KEY}" }
 
 # --- services/2016-roblox-main/config.json (serverRuntimeConfig.backend) ---
   "csrfKey": "${FRONTEND_CSRF_KEY}"

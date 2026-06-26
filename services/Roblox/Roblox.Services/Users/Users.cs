@@ -137,6 +137,9 @@ public class UsersService : ServiceBase, IService
         {
             password = hash,
         });
+        // Invalidate every existing session on a password change/reset (security finding M5),
+        // so a thief whose stolen cookie prompted the reset is logged out.
+        await ExpireAllSessions(userId);
     }
 
     public async Task UnlockAccount(long userId)
@@ -586,7 +589,8 @@ public class UsersService : ServiceBase, IService
             createdAt = DateTime.UtcNow,
         };
         var serialized = JsonSerializer.Serialize(sess);
-        var id = Guid.NewGuid().ToString();
+        // CSPRNG session id (security finding H4) — Guid.NewGuid() is not cryptographically random.
+        var id = Roblox.Libraries.CryptoRandom.TokenUrlSafe(32);
         await redis.StringSetAsync(redisKeyPrefix + id, serialized);
         return id;
     }
@@ -2207,8 +2211,10 @@ public class UsersService : ServiceBase, IService
             throw new ArgumentException(nameof(socialUrl) + " cannot be null");
         if (string.IsNullOrWhiteSpace(verificationPhrase))
             throw new ArgumentException(nameof(verificationPhrase) + " cannot be null");
-        
-        var uuid = Guid.NewGuid().ToString();
+
+        // CSPRNG reset token (security finding H4) — this token is the sole authorization to
+        // change the victim's password after the social step, so it must be unguessable.
+        var uuid = Roblox.Libraries.CryptoRandom.TokenUrlSafe(32);
         await db.ExecuteAsync("INSERT INTO user_password_reset (user_id, id, created_at, status, social_url, verification_phrase) VALUES (:user_id, :id, :created_at, :status, :social_url, :verification_phrase)", new
         {
             user_id = userId,

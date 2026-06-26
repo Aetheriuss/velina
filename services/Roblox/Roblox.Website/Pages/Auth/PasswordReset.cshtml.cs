@@ -168,13 +168,29 @@ public class PasswordReset : RobloxPageModel
         }
         else if (action == "change")
         {
+            // Rate-limit the redemption step (security finding AUTH-16): 5s spacing + 10 / 15min per IP.
+            if (!await services.cooldown.TryCooldownCheck("PasswordResetChangeV1:" + hashedIp, TimeSpan.FromSeconds(5)))
+            {
+                errorMessage = "Too many attempts. Try again in a few seconds.";
+                return new PageResult();
+            }
+            var changeBucketKey = "PasswordResetChangeCountV1:" + hashedIp;
+            var changeAttempts = (await services.cooldown.GetBucketDataForKey(changeBucketKey, TimeSpan.FromMinutes(15))).ToArray();
+            if (!await services.cooldown.TryIncrementBucketCooldown(changeBucketKey, 10, TimeSpan.FromMinutes(15), changeAttempts, true))
+            {
+                errorMessage = "Too many attempts. Try again later.";
+                return new PageResult();
+            }
+
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 3)
             {
                 errorMessage = InvalidNewPassword;
                 return new PageResult();
             }
-            
-            if (string.IsNullOrWhiteSpace(passwordResetId) || !Guid.TryParse(passwordResetId, out _))
+
+            // Reset ids are now CSPRNG url-safe tokens (no longer Guids); the parameterized
+            // lookup below rejects anything that doesn't exist, so just bound the length here.
+            if (string.IsNullOrWhiteSpace(passwordResetId) || passwordResetId.Length > 64)
             {
                 errorMessage = InvalidPasswordResetId;
                 return new PageResult();

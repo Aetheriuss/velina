@@ -58,7 +58,12 @@ Roblox.Configuration.AssetValidationServiceUrl =
     configuration.GetSection("AssetValidation:BaseUrl").Value;
 Roblox.Configuration.AssetValidationServiceAuthorization =
     configuration.GetSection("AssetValidation:Authorization").Value;
-Roblox.Services.GameServerService.Configure(string.Join(Guid.NewGuid().ToString(), new int [16].Select(_ => Guid.NewGuid().ToString()))); // More TODO: If we every load balance, this will break
+// Game-server ticket signing key. Persist via config so game-join tickets survive a restart and
+// so a future multi-instance setup stays consistent (plan §7 / P1-2). Falls back to a per-process
+// CSPRNG value when unset (same behavior as before, but no longer a non-CSPRNG Guid).
+Roblox.Services.GameServerService.Configure(
+    configuration.GetSection("GameServer:TicketJwtKey").Value
+    ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64));
 // Package Clothing
 Roblox.Configuration.PackageShirtAssetId = long.Parse(configuration.GetSection("PackageShirtAssetId").Value);
 Roblox.Configuration.PackagePantsAssetId = long.Parse(configuration.GetSection("PackagePantsAssetId").Value);
@@ -192,7 +197,11 @@ app.UseRobloxPlayerCorsMiddleware(); // cors varies depending on authentication 
 app.UseRobloxCsrfMiddleware();
 app.UseApplicationGuardMiddleware();
 Roblox.Website.Middleware.ApplicationGuardMiddleware.Configure(configuration.GetSection("Authorization").Value);
-Roblox.Website.Middleware.CsrfMiddleware.Configure(Guid.NewGuid().ToString() + Guid.NewGuid().ToString() + Guid.NewGuid().ToString()); // TODO: This would break if we ever load balance
+// CSRF signing key. Persist via config so CSRF cookies survive a restart (plan §7 / P1-2).
+// Falls back to a per-process CSPRNG value when unset.
+Roblox.Website.Middleware.CsrfMiddleware.Configure(
+    configuration.GetSection("Csrf:Key").Value
+    ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64));
 
 // Swagger / OpenAPI must never be exposed in production (P0-6 / M1).
 if (app.Environment.IsDevelopment())

@@ -82,11 +82,10 @@ public class CsrfMiddleware : ControllerServicesExtended
 
     public async Task OnTokenFail(HttpContext ctx)
     {
-        var csrfBits = new Byte[8];
-        new Random().NextBytes(csrfBits);
         var newToken = new CsrfJwtEntry()
         {
-            csrf = Convert.ToBase64String(csrfBits),
+            // CSPRNG CSRF token (security finding M3) — was System.Random with only 8 bytes.
+            csrf = Roblox.Libraries.CryptoRandom.TokenUrlSafe(24),
             createdAt = DateTime.UtcNow,
         };
         var tokenSerialized = CreateJwt(newToken);
