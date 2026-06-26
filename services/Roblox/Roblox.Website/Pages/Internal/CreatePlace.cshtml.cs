@@ -289,6 +289,6 @@ public class CreatePlace : RobloxPageModel
         // create universe too
         await services.games.CreateUniverse(asset.placeId);
         // give url
-        successUrl = "http://:economy-simulator.org/internal/place-update?id=" + asset.placeId;
+        successUrl = Roblox.Configuration.BaseUrl + "/internal/place-update?id=" + asset.placeId;
     }
 }

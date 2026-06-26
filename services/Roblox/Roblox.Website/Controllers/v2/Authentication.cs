@@ -48,10 +48,17 @@ public class AuthenticationControllerV2 : ControllerBase
         if (!await services.cooldown.TryCooldownCheck("change password " + safeUserSession.userId,
                 TimeSpan.FromMinutes(1)))
             throw new RobloxException(429, 0, "TooManyRequests");
+        // Lock out repeated wrong-current-password attempts (security finding H2 / P0-8):
+        // 5 failures per 15 minutes for this account.
+        var changePwFailKey = "ChangePasswordFailV1:" + safeUserSession.userId;
+        var changePwFails = (await services.cooldown.GetBucketDataForKey(changePwFailKey, TimeSpan.FromMinutes(15))).ToArray();
+        if (changePwFails.Length >= 5)
+            throw new RobloxException(429, 0, "TooManyRequests");
         // Verify password
         var correctPass = await services.users.VerifyPassword(safeUserSession.userId, request.currentPassword);
         if (!correctPass)
         {
+            await services.cooldown.TryIncrementBucketCooldown(changePwFailKey, 5, TimeSpan.FromMinutes(15), changePwFails, true);
             throw new BadRequestException(8, "Password does not match");
         }
         // We can update the user's password now
@@ -95,6 +102,19 @@ public class AuthenticationControllerV2 : ControllerBase
             throw new BadRequestException(0, "Login type is not supported.");
         }
 
+        // Brute-force throttling (security finding H2 / P0-8). This shares the same Redis
+        // buckets as the Razor login page so both surfaces are limited together. Relies on a
+        // trustworthy client IP, which is why P0-7 (cf-connecting-ip) must land first.
+        var hashedIp = GetIP();
+        // 1) Minimum spacing between attempts from one IP.
+        if (!await services.cooldown.TryCooldownCheck("LoginAttemptV1:" + hashedIp, TimeSpan.FromSeconds(5)))
+            throw new RobloxException(429, 0, "TooManyRequests");
+        // 2) Max 15 attempts per IP per 10 minutes (count even rejected ones).
+        var ipLoginKey = "LoginAttemptCountV1:" + hashedIp;
+        var ipAttempts = (await services.cooldown.GetBucketDataForKey(ipLoginKey, TimeSpan.FromMinutes(10))).ToArray();
+        if (!await services.cooldown.TryIncrementBucketCooldown(ipLoginKey, 15, TimeSpan.FromMinutes(10), ipAttempts, true))
+            throw new RobloxException(429, 0, "TooManyRequests");
+
         long userId;
         try
         {
@@ -105,9 +125,16 @@ public class AuthenticationControllerV2 : ControllerBase
             throw new ForbiddenException(1, "Incorrect username or password. Please try again");
         }
 
+        // 3) Per-account lockout: 10 failed attempts per 15 minutes, independent of source IP.
+        var accountKey = "LoginAttemptAccountV1:" + userId;
+        var accountAttempts = (await services.cooldown.GetBucketDataForKey(accountKey, TimeSpan.FromMinutes(15))).ToArray();
+        if (accountAttempts.Length >= 10)
+            throw new RobloxException(429, 0, "TooManyRequests");
+
         var passwordOk = await services.users.VerifyPassword(userId, request.password);
         if (!passwordOk)
         {
+            await services.cooldown.TryIncrementBucketCooldown(accountKey, 10, TimeSpan.FromMinutes(15), accountAttempts, true);
             throw new ForbiddenException(1, "Incorrect username or password. Please try again");
         }
 

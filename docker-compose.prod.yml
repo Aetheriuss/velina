@@ -1,0 +1,136 @@
+# Velina production stack (DEP-2) — Cloudflare Tunnel + Unraid.
+#
+# Topology (plan §1): cloudflared holds an OUTBOUND tunnel (no inbound ports, CGNAT-friendly)
+# and is the ONLY way in. roblox-backend is the sole HTTP ingress; everything else lives on the
+# private velina-net and is never published to the host (this is the C2/H8/M13 isolation fix).
+#
+# game-server + RCCService are NOT here: they run natively in a Windows VM (plan §6).
+#
+# Required host-side inputs (see deploy/.env.example and deploy/README.md):
+#   .env file with POSTGRES_PASSWORD, ASSET_VALIDATION_AUTHORIZATION, VELINA_CONFIG_DIR, VELINA_DATA_DIR
+#   $VELINA_CONFIG_DIR/appsettings.json, game-servers.json, cloudflared/{config.yml,credentials.json}
+#   secrets generated with deploy/generate-secrets.sh
+
+networks:
+  velina-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16   # must match appsettings TrustedProxyNetworks (P0-7)
+
+volumes:
+  pgdata:
+  redisdata:
+
+services:
+  postgres:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-velina}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-velina}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [velina-net]
+    # no published ports — internal only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-velina} -d ${POSTGRES_DB:-velina}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # appendonly persistence — Redis holds session/ban cache + the IP-hash salt
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    networks: [velina-net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  migrations:
+    build:
+      context: ./services/api
+    restart: "no"   # one-shot, forward-only (DEP-6)
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-velina}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB:-velina}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [velina-net]
+
+  asset-validator:
+    build:
+      context: ./services/AssetValidationServiceV2
+    restart: unless-stopped
+    environment:
+      ASSET_VALIDATION_AUTHORIZATION: ${ASSET_VALIDATION_AUTHORIZATION:?set ASSET_VALIDATION_AUTHORIZATION}
+      ASSET_VALIDATION_LISTEN: ":4300"
+    networks: [velina-net]
+    # no published ports — reached only by roblox-backend over velina-net
+
+  roblox-frontend:
+    build:
+      context: ./services/2016-roblox-main
+    restart: unless-stopped
+    networks: [velina-net]
+    # no published ports — proxied by roblox-backend. Rebuild on domain/flag change (RISK-FE-2).
+
+  roblox-backend:
+    build:
+      context: ./services/Roblox
+    restart: unless-stopped
+    # Exactly ONE instance — CSRF key / game-server token / session secret are per-process
+    # Guid.NewGuid() (plan §7). Do not scale; every restart logs all users out for now.
+    deploy:
+      replicas: 1
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:5000
+    volumes:
+      # gitignored config, created on the host (mode 0600), mounted read-only.
+      - ${VELINA_CONFIG_DIR:?set VELINA_CONFIG_DIR}/appsettings.json:/app/appsettings.json:ro
+      - ${VELINA_CONFIG_DIR}/game-servers.json:/app/game-servers.json:ro
+      # persistent content + uploads. appsettings Directories:* must point under /data
+      # (e.g. /data/assets, /data/thumbnails) so assets survive image rebuilds.
+      - ${VELINA_DATA_DIR:?set VELINA_DATA_DIR}:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    networks: [velina-net]
+    # no published ports — cloudflared reaches it on velina-net. Expose for the LAN bridge only
+    # if the Windows VM's game-server must call back to :5000 (plan §1); keep it LAN-only.
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5000/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s   # generous: boot runs delayed tasks (plan DEP-7)
+      retries: 5
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    # Config-file mode: ingress routes live in config.yml (-> roblox-backend:5000), creds read-only.
+    # Token mode is a simpler alternative: drop the volume and set TUNNEL_TOKEN instead.
+    command: ["tunnel", "--no-autoupdate", "--config", "/etc/cloudflared/config.yml", "run"]
+    volumes:
+      - ${VELINA_CONFIG_DIR}/cloudflared:/etc/cloudflared:ro
+    depends_on:
+      - roblox-backend
+    networks: [velina-net]

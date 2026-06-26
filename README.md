@@ -1,3 +1,21 @@
+## ⚠️ Secrets — generate your own (do not copy values from this guide)
+
+Earlier revisions of this README shipped real, shared secrets (frontend `csrfKey`,
+game-server `authorization`/`websiteBotAuth`) and default DB passwords. Those are
+**public and compromised** — never use them. Generate a fresh set per deployment:
+
+```bash
+bash deploy/generate-secrets.sh
+```
+
+It prints every secret mapped to the exact config location, and notes which values
+must be **identical** across services (e.g. `Render:Authorization` == `RccAuthorization`
+== game-server `authorization`; `BotAuthorization` == game-server `websiteBotAuth`).
+Use a strong, unique Postgres password and a **least-privilege non-superuser** DB role.
+The placeholders below (`<...>`) are filled from that script's output.
+
+---
+
 1. setup ubuntu and redis
 
 go to powershell as administrator, then do ```wsl --install``` if you get erorrs enable "Windows Subsystem For Linux" and "Windows Virtual Machine" in the windows features.
@@ -29,9 +47,9 @@ go to ```services/api``` and make a file named ```config.json``` and paste this 
 	"client": "pg",
         "connection": {
         "host": "127.0.0.1",
-        "user": "postgres",
-        "password": "password",
-        "database": "postgres"
+        "user": "velina",
+        "password": "<YOUR_DB_PASSWORD>",
+        "database": "velina"
         }
     }
 }
@@ -41,9 +59,11 @@ now go to the command in the ```services/api``` folder and paste this ```npm i``
 
 now you have to go to ```services/Roblox/Roblox.Website``` open the appsettings.example.json file, and rename to appsettings.json and then go into it. go to line 37 and change the line ```    "OwnerUserId": "3",``` to ```    "OwnerUserId": "1",```
 
-go to line 26 now, and change the line ```"Postgres": "Host=127.0.0.1; Database=economysimulator; Password=test; Username=postgres; Maximum Pool Size=20",``` to 
+go to line 26 now, and set the `Postgres` connection string to your own database/credentials, e.g.
 
-``` "Postgres": "Host=127.0.0.1; Database=postgres; Password=password; Username=postgres; Maximum Pool Size=20",```
+``` "Postgres": "Host=127.0.0.1; Database=velina; Password=<YOUR_DB_PASSWORD>; Username=velina; Maximum Pool Size=20",```
+
+(Use a least-privilege non-superuser role and the password from `deploy/generate-secrets.sh`.)
 
 Now press ```ctrl + h``` and change C:\\Users\\mark\\Desktop\\ to C:\\Users\\yourusername\\Downloads\\``` FOR EVERY SINGLE ONE, MAKE SURE THE FOLDER IS NAMED ECS AND IN DOWNLOADS
 
@@ -62,7 +82,7 @@ paste this into it
 ```
 {
   "serverRuntimeConfig": {
-    "backend": {"csrfKey":"g0qiiDZw7jM2l54+7qsuRaymx6nBGdCKT9Kc0bqJB3aZ26rSsPMXfg8uWfUBtTqWenDVy+AQS1jkdrgvUwVSsw=="}
+    "backend": {"csrfKey":"<GENERATE — run util/create_config.js or deploy/generate-secrets.sh>"}
   },
   "publicRuntimeConfig": {
     "backend": {
@@ -103,11 +123,11 @@ now go to ```services/game-server``` and make a file named config.json in the fi
 ```
 {
     "rcc": "C:\\Users\\yourusername\\Downloads\\ECS\\services\\RCCService",
-    "authorization": "90WGEGNJGWHIWGOI31900H9GIOGI",
+    "authorization": "<RENDER_RCC_SECRET — must equal backend Render:Authorization + RccAuthorization>",
     "baseUrl": "http://localhost:5000",
     "rccPort": 64989,
     "port": 3040,
-    "websiteBotAuth": "UW8U8TU9W9R8RHGRJOGWGOINOOWGNWRNJWWNRJ",
+    "websiteBotAuth": "<BOT_SECRET — must equal backend BotAuthorization>",
     "thumbnailWebsocketPort": 3189,
     "dockerDisabled": true
 }

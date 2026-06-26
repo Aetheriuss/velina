@@ -2,6 +2,13 @@ import axios from 'axios';
 import getConfig from 'next/config';
 import { fromUrl, parseDomain, ParseResultType } from 'parse-domain';
 import { getBaseUrl } from '../../lib/request';
+
+// Host of the public site (e.g. "velina.lol"), derived from config instead of hardcoded.
+const getSiteHostname = () => {
+  try { return new URL(getBaseUrl()).hostname; } catch (e) { return ''; }
+};
+const siteHostname = getSiteHostname();
+
 const UrlUtilities = (() => {
   const getDomainFromUrl = (url) => {
     const baseDomainParsed = parseDomain(fromUrl(url));
@@ -11,10 +18,10 @@ const UrlUtilities = (() => {
       return baseDomainParsed.hostname;
       console.log(baseDomainParsed.hostname)
     }else if (baseDomainParsed.type === ParseResultType.Reserved) {
-      if (baseDomainParsed.hostname === 'economy-simulator.org') {
-        return 'economy-simulator.org';
+      if (baseDomainParsed.hostname === siteHostname) {
+        return siteHostname;
       }
-      throw new Error('The only allowed reserved domain type is economy-simulator.org, got ' + baseDomainParsed.hostname);
+      throw new Error('The only allowed reserved domain type is ' + siteHostname + ', got ' + baseDomainParsed.hostname);
     } else {
       //throw new Error('Unsupported domain type: ' + baseDomainParsed.type);
     }
@@ -68,12 +75,11 @@ const actualHandler = async (req, res) => {
     for (const item of Object.getOwnPropertyNames(result.headers)) {
       let value = result.headers[item];
       if (item === 'set-cookie') {
-        // TODO: "localhost" needs to be configurable
         if (typeof value === 'string') {
-          value = value.replace(/roblox\.com/g, 'economy-simulator.org');
+          value = value.replace(/roblox\.com/g, siteHostname);
         } else {
           value.forEach((v, i, arr) => {
-            arr[i] = v.replace(/roblox\.com/g, 'economy-simulator.org');
+            arr[i] = v.replace(/roblox\.com/g, siteHostname);
           });
         }
       }

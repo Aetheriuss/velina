@@ -1,0 +1,8 @@
+**/bin
+**/obj
+**/.vs
+**/.idea
+Dockerfile
+.dockerignore
+# integration-test docker assets are not part of the prod image
+Roblox.IntegrationTest/docker

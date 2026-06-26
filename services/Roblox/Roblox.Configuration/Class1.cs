@@ -22,6 +22,7 @@ public static class Configuration
     public static string AdminBundleDirectory { get; set; }
     public static string EconomyChatBundleDirectory { get; set; }
     public static string BaseUrl { get; set; }
+    public static string FrontendBaseUrl { get; set; } = "http://localhost:3000";
     public static string HCaptchaPublicKey { get; set; }
     public static string HCaptchaPrivateKey { get; set; }
     public static IEnumerable<GameServerConfigEntry> GameServerIpAddresses { get; set; }

@@ -42,6 +42,10 @@ Roblox.Configuration.JsonDataDirectory = configuration.GetSection("Directories:J
 Roblox.Configuration.AdminBundleDirectory = configuration.GetSection("Directories:AdminBundle").Value;
 Roblox.Configuration.EconomyChatBundleDirectory = configuration.GetSection("Directories:EconomyChatBundle").Value;
 Roblox.Configuration.BaseUrl = configuration.GetSection("BaseUrl").Value;
+// Frontend (Next.js) proxy target — internal container address in prod, localhost in dev (DEP-3).
+Roblox.Configuration.FrontendBaseUrl = configuration.GetSection("Frontend:BaseUrl").Value ?? "http://localhost:3000";
+// Networks allowed to act as a trusted reverse proxy (the cloudflared tunnel container) — DEP-4 / P0-7.
+Roblox.Website.Lib.TrustedProxy.Configure(configuration.GetSection("TrustedProxyNetworks").Get<IEnumerable<string>>());
 Roblox.Configuration.HCaptchaPublicKey = configuration.GetSection("HCaptcha:Public").Value;
 Roblox.Configuration.HCaptchaPrivateKey = configuration.GetSection("HCaptcha:Private").Value;
 Roblox.Configuration.GameServerAuthorization = configuration.GetSection("GameServerAuthorization").Value;
@@ -94,6 +98,42 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+// Must run before anything that reads the client IP, request scheme, or routing.
+// Strips spoofable inbound headers (P0-5) and records whether the socket peer is
+// our trusted tunnel ingress so cf-connecting-ip can be trusted downstream (P0-7).
+app.UseMiddleware<Roblox.Website.Middleware.SpoofableHeaderGuardMiddleware>();
+
+// Honor X-Forwarded-For / X-Forwarded-Proto only from the trusted proxy network so
+// Request.Scheme is https behind the tunnel and RemoteIpAddress reflects the client (DEP-4).
+var forwardedHeadersOptions = new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto,
+    ForwardLimit = null, // bounded by KnownNetworks instead of a fixed hop count
+};
+forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownProxies.Clear();
+foreach (var trustedNetwork in Roblox.Website.Lib.TrustedProxy.Networks)
+    forwardedHeadersOptions.KnownNetworks.Add(trustedNetwork);
+app.UseForwardedHeaders(forwardedHeadersOptions);
+
+// Cheap liveness probe (DEP-7): no DB/session dependency, answers before the rest of the
+// pipeline so a healthcheck can't be blocked by a slow downstream. Used by the container
+// healthcheck for visibility/ordering only — it must NOT drive restarts (every restart
+// logs all users out until the per-process secrets are persisted; see plan §7).
+app.Use(async (ctx, next) =>
+{
+    if (ctx.Request.Path == "/healthz")
+    {
+        ctx.Response.StatusCode = 200;
+        ctx.Response.ContentType = "text/plain";
+        await ctx.Response.WriteAsync("ok");
+        return;
+    }
+    await next();
+});
+
 app.UseRouting();
 
 var prepareResponseForCache = (StaticFileResponseContext ctx) =>
@@ -154,8 +194,12 @@ app.UseApplicationGuardMiddleware();
 Roblox.Website.Middleware.ApplicationGuardMiddleware.Configure(configuration.GetSection("Authorization").Value);
 Roblox.Website.Middleware.CsrfMiddleware.Configure(Guid.NewGuid().ToString() + Guid.NewGuid().ToString() + Guid.NewGuid().ToString()); // TODO: This would break if we ever load balance
 
-app.UseSwagger();
-app.UseSwaggerUI();
+// Swagger / OpenAPI must never be exposed in production (P0-6 / M1).
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 app.UseMiddleware<FrontendProxyMiddleware>();
 app.UseRobloxLoggingMiddleware();

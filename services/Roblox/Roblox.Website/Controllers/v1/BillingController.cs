@@ -23,7 +23,7 @@ public class BillingControllerV1
     {
         return new
         {
-            redirectUrl = "https://www.roblox.com:443/premium/membership",
+            redirectUrl = Roblox.Configuration.BaseUrl + "/premium/membership",
             selectedProduct = (string?)null,
             loggedIn = false,
             currentCredit = 0,

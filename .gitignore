@@ -1,0 +1,5 @@
+# Deployment secrets — NEVER commit these.
+/.env
+/secrets.txt
+/deploy/cloudflared/credentials.json
+/deploy/cloudflared/config.yml

@@ -479,11 +479,23 @@ public class GroupsService : ServiceBase, IService
     // Example URL: https://discord.gg/abcd123
     private static readonly Regex DiscordUrlRegex = new Regex("https?:\\/\\/discord.gg\\/[0-9a-zA-Z]+");
 
-    // Example URL (www is optional): http://localhost:3000/groups/1/name#!/about
-    private static readonly Regex RobloxGroupUrlRegex = new("http:\\/\\/(www\\.)?localhost:3000\\/groups\\/[0-9]+\\/[a-zA-Z\\-0-9]+", RegexOptions.IgnoreCase);
+    // Builds a regex matching the site's own group URLs, with the host taken from the
+    // configured BaseUrl (e.g. velina.lol) instead of a hardcoded localhost:3000.
+    private static Regex BuildGroupUrlRegex(string pathPattern)
+    {
+        var host = "localhost:3000";
+        try { host = new System.Uri(Configuration.BaseUrl).Authority; }
+        catch { /* fall back to dev host */ }
+        return new Regex("https?:\\/\\/(www\\.)?" + Regex.Escape(host) + pathPattern, RegexOptions.IgnoreCase);
+    }
 
-    // Example URL (www is optional): http://localhost:3000/My/Groups.aspx?gid=4
-    private static readonly Regex RobloxGroupUrlRegexOld = new("http:\\/\\/(www\\.)?localhost:3000\\/my\\/groups\\.aspx\\?gid=[0-9]+", RegexOptions.IgnoreCase);
+    // Example URL (www is optional): https://velina.lol/groups/1/name#!/about
+    private static Regex? _robloxGroupUrlRegex;
+    private static Regex RobloxGroupUrlRegex => _robloxGroupUrlRegex ??= BuildGroupUrlRegex("\\/groups\\/[0-9]+\\/[a-zA-Z\\-0-9]+");
+
+    // Example URL (www is optional): https://velina.lol/My/Groups.aspx?gid=4
+    private static Regex? _robloxGroupUrlRegexOld;
+    private static Regex RobloxGroupUrlRegexOld => _robloxGroupUrlRegexOld ??= BuildGroupUrlRegex("\\/my\\/groups\\.aspx\\?gid=[0-9]+");
 
     private bool IsLinkValid(SocialLinkType type, string url, string title)
     {

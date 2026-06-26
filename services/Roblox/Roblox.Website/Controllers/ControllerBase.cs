@@ -57,11 +57,22 @@ namespace Roblox.Website.Controllers
         public static string GetRequesterIpRaw(HttpContext ctx)
         {
             Debug.Assert(ctx != null);
-            // Check for cloudflare
-            var headers = ctx.Request.Headers;
-            if (headers.ContainsKey("cf-connecting-ip"))
+            // cf-connecting-ip is only trustworthy when the request actually came through our
+            // Cloudflare tunnel ingress (the cloudflared container on a trusted internal network).
+            // SpoofableHeaderGuardMiddleware strips the header from untrusted peers and records the
+            // trust decision; we re-check the flag here as defense in depth (security finding H3 / P0-7).
+            var trustedPeer = ctx.Items.TryGetValue(
+                                  Roblox.Website.Middleware.SpoofableHeaderGuardMiddleware.TrustedPeerItemKey,
+                                  out var trustedFlag) && trustedFlag is true;
+            if (trustedPeer)
             {
-                return headers["cf-connecting-ip"];
+                var headers = ctx.Request.Headers;
+                if (headers.ContainsKey("cf-connecting-ip"))
+                {
+                    var cfIp = headers["cf-connecting-ip"].ToString();
+                    if (!string.IsNullOrEmpty(cfIp))
+                        return cfIp;
+                }
             }
 
             var ipString = ctx.Connection.RemoteIpAddress?.ToString();

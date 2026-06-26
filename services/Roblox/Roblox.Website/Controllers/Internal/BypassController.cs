@@ -106,12 +106,9 @@ namespace Roblox.Website.Controllers
                 is18OrOver = await services.users.Is18Plus(userSession.userId);
             }
 
-            // TEMPORARY UNTIL AUTH WORKS ON STUDIO! REMEMBER TO REMOVE
-            if (HttpContext.Request.Headers.ContainsKey("RbxTempBypassFor18PlusAssets"))
-            {
-                is18OrOver = true;
-            }
-            
+            // Age is derived from the authenticated session only. The previous
+            // RbxTempBypassFor18PlusAssets header bypass was removed (security finding H13 / P0-4).
+
             var assetId = id;
             var invalidIdKey = "InvalidAssetIdForConversionV1:" + assetId;
             // Opt

@@ -96,16 +96,18 @@ public class FrontendProxyMiddleware
         AllowAutoRedirect = false,
     });
 
+    private static Uri? _frontendBaseUri;
+    private static Uri FrontendBaseUri => _frontendBaseUri ??= new Uri(Roblox.Configuration.FrontendBaseUrl);
+
     private async Task<HttpResponseMessage> ProxyRequestAsync(string url)
     {
-        var fullUrl = "http://localhost:3000" + url;
-        Console.WriteLine("[PROXY] {0}", fullUrl);
-        var safeUrl = new Uri(fullUrl);
-        if (safeUrl.Port != 3000)
-            throw new ArgumentException("Unsafe Url: " + fullUrl);
-        if (safeUrl.Host != "localhost")
-            throw new ArgumentException("Unsafe Url: " + fullUrl);
-        
+        // url is always a path+query (GetEncodedPathAndQuery), so it resolves against the
+        // configured frontend authority. The Authority check is defense-in-depth against
+        // anything that could turn it into an absolute URL pointing elsewhere.
+        var safeUrl = new Uri(FrontendBaseUri, url);
+        if (safeUrl.Authority != FrontendBaseUri.Authority || safeUrl.Scheme != FrontendBaseUri.Scheme)
+            throw new ArgumentException("Unsafe Url: " + url);
+
         var result = await _httpClient.GetAsync(safeUrl);
         return result;
     }

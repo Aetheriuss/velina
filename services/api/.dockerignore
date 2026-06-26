@@ -1,0 +1,8 @@
+node_modules
+public
+storage
+tmp
+.git
+Dockerfile
+.dockerignore
+config.json
