@@ -56,6 +56,9 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 - `d1dfc58` — P1-2 CSPRNG tokens, session lifecycle, persist per-process secrets
 - `465a992` — P1-6 latent SQLi + P1-7 case-insensitive username uniqueness
 - `41f2471` — P1-5 SSRF lockdown + P1-6 Lua-injection fix
+- `5cef4fa` — docs: PROGRESS.md tracking P0 + DEP + P1
+- `e3a4264` — P2 dependency remediation (ImageSharp/jwt+HS256/axios/ws/express/admin-lock,
+  +Npgsql 6.0.11/Newtonsoft 13/Swashbuckle 6.6.2) + M6 secrets-to-config
 
 ---
 
