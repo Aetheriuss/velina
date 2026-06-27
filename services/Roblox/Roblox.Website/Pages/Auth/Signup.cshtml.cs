@@ -66,8 +66,10 @@ public class Signup : RobloxPageModel
     }
     public async Task<IActionResult> OnGet()
     {
+        // Registration is Discord-only — send anyone hitting the legacy signup form to Discord.
+        return Redirect("/auth/discord/login");
         FeatureCheck();
-        
+
         if (string.IsNullOrEmpty(applicationId) && string.IsNullOrEmpty(inviteId))
         {
             return new RedirectResult("/");
@@ -96,8 +98,10 @@ public class Signup : RobloxPageModel
     
     public async Task<IActionResult> OnPost()
     {
+        // Registration is Discord-only — the legacy signup form no longer creates accounts.
+        return Redirect("/auth/discord/login");
         // Error messages are intentionally vague. Let's keep it that way.
-        
+
         if (string.IsNullOrEmpty(applicationId) && string.IsNullOrEmpty(inviteId))
         {
             Writer.Info(LogGroup.SignUp, "Sign up failed, empty applicationId and inviteId");

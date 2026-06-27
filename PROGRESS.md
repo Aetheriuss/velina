@@ -186,6 +186,27 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 - **Phase 4** (live games): stand up the Windows VM (game-server native + RCCService.exe + converter);
   wire `Render:BaseUrl`; **resolve RISK-GAMEWS** (is game transport WebSocket-over-HTTPS?).
 
+### Feature: Discord-only authentication
+Discord OAuth is now the **sole public registration/login path**. Validated: backend Release build,
+frontend `next build` (exit 0), migration on PG13 (one-account-per-Discord-id enforced).
+- **New backend**: `Lib/DiscordOAuth.cs` (authorize URL, code→user exchange, signed pending-signup token);
+  Razor pages `/auth/discord/login`, `/auth/discord/callback`, `/auth/choose-username`; `discord_id`
+  column + partial unique index (`ux_user_discord_id`); `CreateUser(..., discordId)` + auto-approved
+  `join_application` so Discord accounts clear the SessionMiddleware approval gate; `GetUserIdFromDiscordId`.
+  Config: `Discord:ClientId/ClientSecret/RedirectUri`.
+- **Disabled paths**: Razor `Signup` + `PasswordReset` → redirect to Discord; v2 `login` API → 403
+  (v2 `signup` was already 503); frontend cookie-import (`validate-and-add-cookie`) → 403; frontend
+  login page + navbar → a single "Continue with Discord" button.
+- **Break-glass**: `/auth/login` password form still works but **staff/owner only** (`StaffFilter.IsStaff`).
+- **Decisions** (confirmed with user): pick-username-once on first login; open to any Discord account;
+  keep owner break-glass.
+- **Known follow-ups (NOT login paths — out of scope but tracked)**: username-change and account-deletion
+  still call `VerifyPassword`, so Discord users (random unusable password) can't use them. Username-change
+  being blocked is consistent with "permanent username"; **account self-deletion needs a Discord-aware
+  path** if you want to offer it.
+- **Operator setup**: create a Discord app, add redirect `https://velina.lol/auth/discord/callback`, set the
+  three `Discord:*` keys (DEPLOYMENT_GUIDE §2a). OAuth round-trip itself needs a real Discord app to test.
+
 ### Deployment artifacts (ready)
 - **`DEPLOYMENT_GUIDE.md`** (repo root) — full step-by-step: traffic-flow/architecture clarification,
   secrets/config, 3 ways to get images onto Unraid (GHCR / docker save-load / build-on-Unraid),

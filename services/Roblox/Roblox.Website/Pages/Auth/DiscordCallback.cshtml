@@ -1,0 +1,22 @@
+@page "/auth/discord/callback"
+@model Roblox.Website.Pages.Auth.DiscordCallback
+
+@{
+    Layout = "Shared/_Layout";
+}
+
+@section MetaTags {
+    <title>Discord sign-in</title>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 col-md-6 offset-md-3">
+            <div class="card card-body">
+                <h3>Discord sign-in</h3>
+                <p class="text-danger">@Model.errorMessage</p>
+                <p><a href="/auth/discord/login">Try signing in with Discord again</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>

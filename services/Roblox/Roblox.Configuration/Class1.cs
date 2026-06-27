@@ -38,6 +38,12 @@ public static class Configuration
     public static string UserAgentBypassSecret { get; set; }
     // M6: moved out of source. Signing key for the verification-phrase JWT cookie (WebsiteServices/Verification.cs).
     public static string VerificationSecret { get; set; }
+    // Discord OAuth — the ONLY public registration/login path. ClientId/Secret from the Discord developer
+    // portal; RedirectUri must be the public callback (e.g. https://velina.lol/auth/discord/callback) and
+    // be listed as an allowed redirect on the Discord application.
+    public static string DiscordClientId { get; set; }
+    public static string DiscordClientSecret { get; set; }
+    public static string DiscordRedirectUri { get; set; }
     public static long PackageShirtAssetId { get; set; }
     public static long PackagePantsAssetId { get; set; }
     public static long PackageLeftArmAssetId { get; set; }

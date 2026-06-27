@@ -1,9 +1,7 @@
+// Discord-only auth: a single "Log In" link to /login, which presents the "Continue with Discord"
+// button. Sign-up and login are the same Discord flow, so there's no separate Sign Up link.
 import React from "react";
 import { createUseStyles } from "react-jss";
-import LoginModalStore from "../../../stores/loginModal";
-import LoginModal from "../../loginModal";
-import getFlag from "../../../lib/getFlag";
-import {useRouter} from "next/dist/client/router";
 
 const useLoginAreaStyles = createUseStyles({
   text: {
@@ -30,40 +28,15 @@ const useLoginAreaStyles = createUseStyles({
 });
 
 const LoginArea = props => {
-  const Router = useRouter();
   const s = useLoginAreaStyles();
-  const loginModalStore = LoginModalStore.useContainer();
 
   return <div className='row'>
-    <div className='col-6 offset-6'>
-      <div className='row'>
-        <div className='col-6'>
-          <p className={s.text}>
-            <a className={s.link} >
-              Sign Up
-            </a>
-          </p>
-        </div>
-        <div className='col-6'>
-          <p className={s.text}>
-            <a className={s.link} onClick={(e) => {
-              e.preventDefault();
-              if (getFlag('requireLoginThroughCookie', false)) {
-                if (getFlag('clientSideRenderingEnabled', false)) {
-                  Router.push('/login');
-                }else{
-                  window.location.href = '/login';
-                }
-                return;
-              }
-              loginModalStore.setOpen(!loginModalStore.open);
-            }}>
-              Login
-            </a>
-          </p>
-          {loginModalStore.open && <LoginModal></LoginModal>}
-        </div>
-      </div>
+    <div className='col-12'>
+      <p className={s.text}>
+        <a className={s.link} href='/login'>
+          Log In
+        </a>
+      </p>
     </div>
   </div>
 }

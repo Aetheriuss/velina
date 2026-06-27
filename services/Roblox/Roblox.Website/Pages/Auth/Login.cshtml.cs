@@ -53,18 +53,6 @@ public class Login : RobloxPageModel
         }
     }
     
-    private async Task CreateSessionAndSetCookie(long userId)
-    {
-        var sess = await services.users.CreateSession(userId);
-        var sessionCookie = Roblox.Website.Middleware.SessionMiddleware.CreateJwt(new Middleware.JwtEntry()
-        {
-            sessionId = sess,
-            createdAt = DateTimeOffset.Now.ToUnixTimeSeconds(),
-        });
-        // HttpOnly + Secure via the shared helper (security finding H10).
-        Roblox.Website.Lib.SessionCookie.Append(HttpContext.Response, sessionCookie);
-    }
-
     private static async Task PreventTimingExploits(Stopwatch watch)
     {
         watch.Stop();
@@ -170,6 +158,15 @@ public class Login : RobloxPageModel
         if (userInfo.accountStatus == AccountStatus.MustValidateEmail)
         {
             errorMessage = LockedAccountMessage;
+            return new PageResult();
+        }
+
+        // Password login is a STAFF-ONLY break-glass path; everyone else signs in with Discord (the only
+        // public registration/login). Discord-created accounts carry an unusable random password, so this
+        // also fails closed for them. Provision the owner/staff account out-of-band to use this.
+        if (!await Roblox.Website.Filters.StaffFilter.IsStaff(userId))
+        {
+            errorMessage = "Password login is for staff only. Please sign in with Discord.";
             return new PageResult();
         }
 

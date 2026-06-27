@@ -56,6 +56,10 @@ Roblox.Configuration.UserAgentBypassSecret = configuration.GetSection("UserAgent
     ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64);
 Roblox.Configuration.VerificationSecret = configuration.GetSection("VerificationSecret").Value
     ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64);
+// Discord OAuth (the only public login/registration path).
+Roblox.Configuration.DiscordClientId = configuration.GetSection("Discord:ClientId").Value;
+Roblox.Configuration.DiscordClientSecret = configuration.GetSection("Discord:ClientSecret").Value;
+Roblox.Configuration.DiscordRedirectUri = configuration.GetSection("Discord:RedirectUri").Value;
 // game-server config stuff
 IConfiguration gameServerConfig = new ConfigurationBuilder().AddJsonFile("game-servers.json").Build();
 Roblox.Configuration.GameServerIpAddresses = gameServerConfig.GetSection("GameServers").Get<IEnumerable<GameServerConfigEntry>>();

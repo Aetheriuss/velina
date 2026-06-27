@@ -46,6 +46,11 @@ const csrfValid = (req) => {
 }
 
 export default function handler(req, res) {
+  // Discord-only auth: importing a .ROBLOSECURITY cookie is no longer a valid login path.
+  return res.status(403).json({
+    success: false,
+    message: 'Cookie login is disabled. Please sign in with Discord.',
+  });
   if (!getFlag('requireLoginThroughCookie', true)) {
     res.status(500).json({
       success: false,

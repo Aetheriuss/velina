@@ -1,0 +1,29 @@
+@page "/auth/choose-username"
+@model Roblox.Website.Pages.Auth.ChooseUsername
+
+@{
+    Layout = "Shared/_Layout";
+}
+
+@section MetaTags {
+    <title>Choose your username</title>
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 col-md-6 offset-md-3 col-lg-4 offset-lg-4">
+            <div class="card card-body">
+                <h2>Choose your username</h2>
+                <p>Your Discord account is verified. Pick the username you'll use on the site — this is public and permanent.</p>
+                @if (Model.errorMessage != null)
+                {
+                    <p class="text-danger">@Model.errorMessage</p>
+                }
+                <form method="post">
+                    <input type="text" placeholder="Username" name="username" value="@Model.suggestedUsername" class="form-control mb-2" autofocus/>
+                    <button type="submit" class="btn btn-success w-100">Create my account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

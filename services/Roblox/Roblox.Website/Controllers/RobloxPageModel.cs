@@ -27,5 +27,21 @@ public class RobloxPageModel : PageModel
     {
         return Roblox.Website.Controllers.ControllerBase.GetIP(rawIpAddress, salt);
     }
+
+    /// <summary>
+    /// Create a session for the user and write the .ROBLOSECURITY cookie. Shared by every login path
+    /// (Discord OAuth + the owner break-glass form) so they all set the session identically.
+    /// </summary>
+    protected async Task CreateSessionAndSetCookie(long userId)
+    {
+        var sess = await services.users.CreateSession(userId);
+        var sessionCookie = Roblox.Website.Middleware.SessionMiddleware.CreateJwt(new Middleware.JwtEntry()
+        {
+            sessionId = sess,
+            createdAt = DateTimeOffset.Now.ToUnixTimeSeconds(),
+        });
+        Roblox.Website.Lib.SessionCookie.Append(HttpContext.Response, sessionCookie);
+    }
+
     public string nonce { get; set; }
 }

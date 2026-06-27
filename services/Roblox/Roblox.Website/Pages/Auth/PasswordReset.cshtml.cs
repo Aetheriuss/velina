@@ -46,9 +46,11 @@ public class PasswordReset : RobloxPageModel
     
     public async Task<IActionResult> OnGet()
     {
+        // Discord-only auth: normal accounts have no password to reset.
+        return new RedirectResult("/auth/discord/login");
         if (!IsEnabled())
             return new RedirectResult("/auth/login");
-        
+
         return new PageResult();
     }
 
@@ -73,9 +75,11 @@ public class PasswordReset : RobloxPageModel
 
     public async Task<IActionResult> OnPost()
     {
+        // Discord-only auth: normal accounts have no password to reset.
+        return new RedirectResult("/auth/discord/login");
         if (!IsEnabled())
             return new RedirectResult("/auth/login");
-        
+
         if (string.IsNullOrWhiteSpace(username))
         {
             errorMessage = InvalidUsernameMessage;

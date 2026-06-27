@@ -120,6 +120,31 @@ Create the four gitignored config files (all are templated by `secrets.txt`):
 > Keep `secrets.txt` and all four files OUT of git (they already are). On Unraid, the appsettings/game-servers/
 > cloudflared files live under `$VELINA_CONFIG_DIR` at mode `0600`.
 
+### 2a. Discord OAuth (the only public login/registration)
+
+Velina uses **Discord** as the sole sign-up/login method (the legacy username/password + cookie-import
+flows are disabled; only a staff break-glass password login on `/auth/login` remains). Set it up once:
+
+1. Go to <https://discord.com/developers/applications> → **New Application**.
+2. **OAuth2 → General**: copy the **Client ID** and **Client Secret**.
+3. **OAuth2 → Redirects**: add exactly `https://velina.lol/auth/discord/callback` (must match
+   `Discord:RedirectUri` in `appsettings.json` character-for-character).
+4. Put the values in `appsettings.json`:
+   ```json
+   "Discord": {
+     "ClientId": "<your client id>",
+     "ClientSecret": "<your client secret>",
+     "RedirectUri": "https://velina.lol/auth/discord/callback"
+   }
+   ```
+No extra scopes are needed (only `identify`). Flow: visitor clicks **Continue with Discord** on `/login`
+→ Discord → back to `/auth/discord/callback` → existing accounts log straight in; brand-new ones pick a
+username once at `/auth/choose-username`, then the account is created (auto-approved) and logged in. One
+Velina account per Discord id is enforced by a DB unique index.
+
+> **Owner break-glass:** the owner/staff account (the out-of-band `OwnerUserId`) can still log in with a
+> password at `/auth/login` if Discord OAuth is ever misconfigured. Everyone else is Discord-only.
+
 ---
 
 ## 3. Get the images onto Unraid

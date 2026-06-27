@@ -237,6 +237,19 @@ public class UsersService : ServiceBase, IService
         return result.userId;
     }
 
+    /// <summary>
+    /// Resolve the Velina userId linked to a Discord user id, or 0 if no account is linked yet.
+    /// Used by the Discord-only auth flow (the sole public login/registration path).
+    /// </summary>
+    public async Task<long> GetUserIdFromDiscordId(string discordId)
+    {
+        var result = await db.QuerySingleOrDefaultAsync<UserId>("SELECT id as userId FROM \"user\" WHERE discord_id = :discordId", new
+        {
+            discordId,
+        });
+        return result?.userId ?? 0;
+    }
+
     public async Task<bool> IsBadUsername(string usernameToCheck)
     {
         var result = await db.QuerySingleOrDefaultAsync<Total>(
@@ -959,7 +972,7 @@ public class UsersService : ServiceBase, IService
         return result;
     }
 
-    public async Task<UserId> CreateUser(string username, string password, Gender gender, long? overrideUserId = null)
+    public async Task<UserId> CreateUser(string username, string password, Gender gender, long? overrideUserId = null, string? discordId = null)
     {
         if (!Enum.IsDefined(gender))
             throw new ArgumentException(nameof(gender) + " is invalid: " + gender);
@@ -990,6 +1003,7 @@ public class UsersService : ServiceBase, IService
                     username,
                     password = hasher.Hash(password),
                     id = userId,
+                    discord_id = discordId,
                 });
             }
             else
@@ -999,6 +1013,7 @@ public class UsersService : ServiceBase, IService
                 {
                     username,
                     password = h,
+                    discord_id = discordId,
                 });
             }
 
@@ -1048,6 +1063,25 @@ public class UsersService : ServiceBase, IService
             foreach (var id in Roblox.Configuration.SignupAssetIds)
             {
                 await CreateUserAsset(userId, id);
+            }
+
+            // Discord signups are auto-approved: registration is open via Discord (the only public path),
+            // so seed an Approved application to satisfy the IsUserApproved gate in SessionMiddleware.
+            // Without this a Discord account would be stuck redirecting to /auth/application.
+            if (discordId != null)
+            {
+                await InsertAsync("join_application", new
+                {
+                    id = Guid.NewGuid().ToString(),
+                    preferred_name = username,
+                    about = "Discord signup",
+                    matrix_name = "",
+                    matrix_domain = "",
+                    social_presence = "discord",
+                    user_id = userId,
+                    author_id = (long?)1,
+                    status = UserApplicationStatus.Approved,
+                });
             }
 
             return new UserId

@@ -89,6 +89,9 @@ public class AuthenticationControllerV2 : ControllerBase
     [HttpPost("login")]
     public async Task Login([Required, FromBody] LoginRequest request)
     {
+        // Discord OAuth is the only login path — the JSON username/password API is disabled
+        // (matches the already-disabled Signup action below). Owner/staff use the Razor break-glass form.
+        throw new ForbiddenException(0, "Password login is disabled. Please sign in with Discord.");
         FeatureFlags.FeatureCheck(FeatureFlag.LoginEnabled);
         if (request.ctype != "username")
         {
