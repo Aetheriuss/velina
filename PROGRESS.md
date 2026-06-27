@@ -186,6 +186,16 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 - **Phase 4** (live games): stand up the Windows VM (game-server native + RCCService.exe + converter);
   wire `Render:BaseUrl`; **resolve RISK-GAMEWS** (is game transport WebSocket-over-HTTPS?).
 
+### Deployment artifacts (ready)
+- **`DEPLOYMENT_GUIDE.md`** (repo root) — full step-by-step: traffic-flow/architecture clarification,
+  secrets/config, 3 ways to get images onto Unraid (GHCR / docker save-load / build-on-Unraid),
+  Cloudflare tunnel, bring-up, smoke test, Phase-4 Windows VM, day-2 ops.
+- `docker-compose.prod.yml` now carries `image:` tags (`${VELINA_REGISTRY}/velina-*:${VELINA_TAG}`) so the
+  same file builds+pushes on the dev box and pulls on Unraid.
+- `deploy/build-and-push.sh` — build the 4 images + push to GHCR from the dev box.
+- `deploy/windows-vm/setup-gameserver.ps1` — write game-server config.json, install/build, launch
+  RCCService.exe + game-server in the Windows VM.
+
 ### Operator actions for go-live (on Unraid)
 - Create real `appsettings.json` + `game-servers.json` + content dirs under `/data`.
 - Create the Cloudflare tunnel + DNS; drop `config.yml` + `credentials.json` in `$VELINA_CONFIG_DIR/cloudflared`.
