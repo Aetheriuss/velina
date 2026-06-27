@@ -1545,7 +1545,7 @@ public class UsersService : ServiceBase, IService
         return Math.Clamp(maxCopies, 2, 100);
     }
 
-    public async Task PurchaseResellableItem(long userIdBuyer, long userAssetId)
+    public async Task PurchaseResellableItem(long userIdBuyer, long userAssetId, long? expectedPrice = null, long? expectedSellerId = null)
     {
         var log = Writer.CreateWithId(LogGroup.ItemPurchaseResale);
         log.Info("PurchaseResellableItem start. buyer = {0} userAssetId = {1}", userIdBuyer, userAssetId);
@@ -1553,11 +1553,18 @@ public class UsersService : ServiceBase, IService
         await using var userAssetLock = await AcquireUserAssetLock(userAssetId);
         // Buyer lock
         await using var buyerLock = await AcquireEconomyLock(userIdBuyer);
-        
+
         await InTransaction(async _ =>
         {
             // Double check that everything is still valid
             var userAsset = await GetUserAssetById(userAssetId);
+            // M17: re-validate price and seller INSIDE the lock. The controller checks these before
+            // acquiring the lock, so without this a price/seller change in the gap would let the buyer be
+            // charged a different price than the one they confirmed (TOCTOU).
+            if (expectedPrice != null && userAsset.price != expectedPrice.Value)
+                throw new InternalPurchaseFailureException(InternalPurchaseFailReason.UserAssetPriceChanged);
+            if (expectedSellerId != null && userAsset.userId != expectedSellerId.Value)
+                throw new InternalPurchaseFailureException(InternalPurchaseFailReason.UserAssetSellerChanged);
             if (userAsset.price == 0)
                 throw new InternalPurchaseFailureException(InternalPurchaseFailReason.UserAssetPriceIsZero);
             if (userAsset.userId == userIdBuyer)

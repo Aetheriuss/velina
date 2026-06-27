@@ -40,6 +40,10 @@ namespace Roblox.Models.Economy
         StaffReportReview,
         GroupPayoutReceived,
         GroupPayoutSent,
+        // M17: trade Robux is now recorded in the ledger (was previously untracked, letting it launder
+        // around transfer caps). Sent = the giver's outflow, Received = the recipient's inflow.
+        TradeRobuxSent,
+        TradeRobuxReceived,
     }
 
     public enum PurchaseAbuseFailureReason
@@ -70,6 +74,9 @@ namespace Roblox.Models.Economy
         UserAssetPriceIsLessThanOne,
         BalanceWouldBeLessThanZeroAfterSale,
         UserWouldExceedMaximumCopiesIfPurchased,
+        // M17: re-checked inside the locked transaction to close the resale price/seller TOCTOU.
+        UserAssetPriceChanged,
+        UserAssetSellerChanged,
     }
     
     public class InternalPurchaseFailureException : Exception

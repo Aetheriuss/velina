@@ -54,6 +54,10 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 | | M15 Go validator: `recover()` + instance-count cap | ✅ done | `go build` + `go vet` clean |
 | | M22 Go validator: concurrency off-by-one + BodyLimit | ✅ **already done** (P0-2) | — |
 | | M14 asset-backup SFTP: execFile argv, key auth / `sshpass -e`, known_hosts | ✅ done | `node --check` |
+| | M17 trade lock ordering (ascending userId) — deadlock fix | ✅ done | Release build |
+| | M17 paired trade-Robux ledger rows (counts toward transfer caps) | ✅ done | Release build; new TransactionSubType + 2 trx classes |
+| | M17 resale price/seller recheck inside the lock (TOCTOU) | ✅ done | Release build |
+| | M4 stop advertising 2FA that isn't implemented (`displayTwoStepVerification=false`) | ✅ done (stopgap) | Release build |
 
 ---
 
@@ -124,9 +128,22 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
     (`Program.cs:31` Configure call commented out); force-pinning 110 breaks InfluxDB's 107-era API.
   - game-server/api/web **brace-expansion / jsdiff** — deep dev-tooling transitives; game-server runs
     native in the Phase-4 VM, api is migrations-only.
-- **P2 remaining (non-dependency)**: 2FA (M4); schema FKs + email/group-name uniqueness (M18);
-  idempotency keys + paired trade-ledger rows (M17/M24); game-server/validator hardening
-  (M10/M11/M15/M21/M22/M16); remaining CSP/header polish (M8); SFTP keys (M14); lottery `StaffFilter` (M12).
+- **P2 non-dependency hardening — largely done this session.** M12, M20, M16, M18, M15, M14, M17 done;
+  M8 and M22 verified already-done. Remaining P2 items deferred with rationale below.
+- **P2 deferred (with rationale):**
+  - **M24 idempotency keys** — trades are already replay-safe (`AcceptTrade` checks `status != Open`
+    under the trade lock) and purchases too (transferred item → price==0 on replay); combined with the
+    P1-1 atomic debit + economy locks, the only residual replay gap is currency-exchange order placement.
+    A full idempotency-key system is a frontend+backend feature for marginal extra protection — deferred.
+  - **M4 full TOTP 2FA** — large feature (enrollment/QR/recovery codes/login step-up). Stopgap done:
+    no longer advertised. Build the real thing as a dedicated effort.
+  - **M10 / M11 / M21 (game-server)** — game-server runs **native in the Phase-4 Windows VM**, not a
+    container; do these when the VM is stood up (token constant-time compare + out of URL, /gs/* join-ticket
+    validation, cp.exec→spawn). Phase 4.
+  - **M23 owner = ID 1** — `OwnerUserId` is already configurable; the residual fix is operational
+    (provision the owner out-of-band with signup closed, set `OwnerUserId` ≠ 1). Add to go-live runbook.
+  - **M19 BypassUrls normalization** (UNVERIFIED) — needs a dynamic path-normalization parity test
+    against the proxy gate; left for a focused verification pass.
 - **Phase 6** (platform): .NET 10 LTS + Next 14 / React 18 + Node 22 / current Go. **Now buildable
   on this box** (.NET 10 SDK installed). Npgsql 6→10 timestamp/UTC semantics is the top hotspot.
 - **Phase 4** (live games): stand up the Windows VM (game-server native + RCCService.exe + converter);
@@ -136,6 +153,8 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 - Create real `appsettings.json` + `game-servers.json` + content dirs under `/data`.
 - Create the Cloudflare tunnel + DNS; drop `config.yml` + `credentials.json` in `$VELINA_CONFIG_DIR/cloudflared`.
 - Run the §8 tunnel smoke test (start private/allowlisted first).
+- **M23:** set `OwnerUserId` to a non-1 account and provision the owner out-of-band with signup closed
+  (don't rely on the predictable seeded user ID 1 as the privileged account).
 
 ### Open product decisions (need user input)
 1. `BillingController` premium-membership redirect target (currently `velina.lol/premium/membership`).

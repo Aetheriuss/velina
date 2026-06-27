@@ -123,7 +123,9 @@ public class EconomyControllerV1 : ControllerBase
         if (buyerCurrency < userAsset.price)
             throw new BadRequestException(0, "BadRequest");
         // All validation logic seems to be complete. Let's do the actual transaction.
-        await services.users.PurchaseResellableItem(safeUserSession.userId, userAsset.userAssetId);
+        // M17: pass expectedPrice/expectedSellerId so they are re-checked inside the lock (TOCTOU).
+        await services.users.PurchaseResellableItem(safeUserSession.userId, userAsset.userAssetId,
+            request.expectedPrice, request.expectedSellerId);
     }
 
     private async Task PurchaseNormalItem(long assetId, PurchaseRequest request)

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Dapper;
 using RedLockNet;
 using Roblox.Dto;
+using Roblox.Dto.Economy;
 using Roblox.Dto.Trades;
 using Roblox.Dto.Users;
 using Roblox.Libraries;
@@ -642,21 +643,26 @@ public class TradesService : ServiceBase, IService
             await using var economyDisposable = new CombinedAsyncDisposable();
             using var ec = ServiceProvider.GetOrCreate<EconomyService>(this);
 
-            // Confirm users still have Robux:
-            // Offer
+            // M17: acquire the economy locks in canonical (ascending userId) order, independent of who
+            // is the offer/request side. Otherwise a reciprocal trade (offer<->request swapped) would
+            // lock the same two users in the opposite order and deadlock.
+            var usersNeedingEconomyLock = new List<long>();
+            if (offerRobux != null) usersNeedingEconomyLock.Add(offerUserId);
+            if (requestRobux != null) usersNeedingEconomyLock.Add(requestUserId);
+            usersNeedingEconomyLock.Sort();
+            foreach (var lockUserId in usersNeedingEconomyLock)
+                economyDisposable.AddChild(await us.AcquireEconomyLock(lockUserId));
+
+            // Confirm users still have Robux (locks are now held):
             if (offerRobux != null)
             {
-                economyDisposable.AddChild(await us.AcquireEconomyLock(offerUserId));
                 log.Info("offerRobux = {0}", offerRobux);
                 var bal = await ec.GetUserRobux(offerUserId);
                 logic.Requires(SendTradeErrorCodes.Generic, bal >= offerRobux);
                 log.Info("user offering has enough robux");
             }
-
-            // Request
             if (requestRobux != null)
             {
-                economyDisposable.AddChild(await us.AcquireEconomyLock(requestUserId));
                 log.Info("requestRobux = {0}", requestRobux);
                 var bal = await ec.GetUserRobux(requestUserId);
                 logic.Requires(SendTradeErrorCodes.Generic, bal >= requestRobux);
@@ -711,7 +717,6 @@ public class TradesService : ServiceBase, IService
 
             if (requestRobux != null)
             {
-                // TODO: We need to add transactions here
                 // Robux that request is giving to offer person
                 // Deduct
                 log.Info("subtract request robux {0} from {1}", requestRobux.Value, requestUserId);
@@ -720,11 +725,14 @@ public class TradesService : ServiceBase, IService
                 var percentToOtherUser = (long)Math.Truncate((decimal) (requestRobux * 0.7));
                 log.Info("transferring request robux {0} to {1}", percentToOtherUser, offerUserId);
                 await ec.IncrementCurrency(offerUserId, CurrencyType.Robux, percentToOtherUser);
+                // M17: record paired ledger rows so trade Robux is tracked + counts toward transfer caps.
+                await ec.InsertTransaction(
+                    new TradeRobuxSentTransaction(requestUserId, offerUserId, requestRobux.Value),
+                    new TradeRobuxReceivedTransaction(offerUserId, requestUserId, percentToOtherUser));
             }
-            
+
             if (offerRobux != null)
             {
-                // TODO: We need to add transactions here
                 // Robux that offer is giving to request person
                 // Deduct
                 log.Info("subtract offer robux {0} from {1}", offerRobux, offerUserId);
@@ -733,6 +741,10 @@ public class TradesService : ServiceBase, IService
                 var percentToOtherUser = (long)Math.Truncate((decimal) (offerRobux * 0.7));
                 log.Info("transferring offer robux {0} to {1}", percentToOtherUser, requestUserId);
                 await ec.IncrementCurrency(requestUserId, CurrencyType.Robux, percentToOtherUser);
+                // M17: record paired ledger rows so trade Robux is tracked + counts toward transfer caps.
+                await ec.InsertTransaction(
+                    new TradeRobuxSentTransaction(offerUserId, requestUserId, offerRobux.Value),
+                    new TradeRobuxReceivedTransaction(requestUserId, offerUserId, percentToOtherUser));
             }
             
             await db.ExecuteAsync("UPDATE user_trade SET status = :status WHERE id = :id", new

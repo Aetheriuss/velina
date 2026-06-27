@@ -20,7 +20,9 @@ public class ApisController : ControllerBase
     {
         return new
         {
-            displayTwoStepVerification = true,
+            // M4: 2FA is not actually implemented, so don't advertise it in account settings (it would
+            // give users a false sense of security). Flip back to true once TOTP 2FA is built.
+            displayTwoStepVerification = false,
             displayAccountPIN = true,
             displayEmailAddress = true,
             displayWeChat = false,

@@ -220,7 +220,7 @@ public class AssetReSaleTransaction : IEconomyTransaction
     {
         return transaction;
     }
-    
+
     public AssetReSaleTransaction(long userIdPurchaser, long userIdSeller, CurrencyType currency, long amount, long assetId, long userAssetId)
     {
         transaction = new EconomyTransactionBase()
@@ -231,9 +231,59 @@ public class AssetReSaleTransaction : IEconomyTransaction
             currencyType = currency,
             type = PurchaseType.Sale,
             subType = TransactionSubType.ItemResale,
-            
+
             userAssetId = userAssetId,
             assetId = assetId,
+        };
+    }
+}
+
+// M17: paired ledger rows for Robux moved in a trade. Recording them (a) makes trade Robux visible in
+// transaction history and (b) lets it count toward transfer caps (it previously did not, so trades
+// could launder Robux around the caps). Sent records the giver's full outflow; Received records the
+// recipient's actual inflow (the platform fee is not credited to anyone).
+public class TradeRobuxSentTransaction : IEconomyTransaction
+{
+    private EconomyTransactionBase transaction { get; set; }
+
+    public EconomyTransactionBase GetDto()
+    {
+        return transaction;
+    }
+
+    public TradeRobuxSentTransaction(long senderUserId, long recipientUserId, long amount)
+    {
+        transaction = new EconomyTransactionBase()
+        {
+            userIdOne = senderUserId,
+            userIdTwo = recipientUserId,
+            amount = amount,
+            currencyType = CurrencyType.Robux,
+            type = PurchaseType.Purchase,
+            subType = TransactionSubType.TradeRobuxSent,
+        };
+    }
+}
+
+public class TradeRobuxReceivedTransaction : IEconomyTransaction
+{
+    private EconomyTransactionBase transaction { get; set; }
+
+    public EconomyTransactionBase GetDto()
+    {
+        return transaction;
+    }
+
+    public TradeRobuxReceivedTransaction(long recipientUserId, long senderUserId, long amount)
+    {
+        transaction = new EconomyTransactionBase()
+        {
+            userIdOne = recipientUserId,
+            userIdTwo = senderUserId,
+            amount = amount,
+            currencyType = CurrencyType.Robux,
+            type = PurchaseType.Sale,
+            subType = TransactionSubType.TradeRobuxReceived,
         };
     }
 }
