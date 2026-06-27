@@ -2,4 +2,6 @@ obj
 Properties
 appsettings.json
 appsettings.*.json
+!appsettings.example.json
 game-servers.json
+!game-servers.example.json

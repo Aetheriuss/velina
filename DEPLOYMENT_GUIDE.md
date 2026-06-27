@@ -79,19 +79,38 @@ Create the four gitignored config files (all are templated by `secrets.txt`):
    `ASSET_VALIDATION_AUTHORIZATION`, and set `VELINA_REGISTRY=ghcr.io/<your-github-username-lowercase>`.
    Leave `VELINA_CONFIG_DIR`/`VELINA_DATA_DIR` as the Unraid paths (they're used on Unraid, but the file
    must parse here too for builds).
-2. **`services/Roblox/Roblox.Website/appsettings.json`** — the authoritative key list is
-   `services/Roblox/Roblox.Website/Program.cs`. Paste the generated secrets. Key settings:
-   - `Postgres` connection string (Host=postgres, the generated password)
-   - `Redis` = `redis:6379`
-   - `BaseUrl` = `https://velina.lol`, `Frontend:BaseUrl` = `http://roblox-frontend:3000`
-   - `TrustedProxyNetworks` = `["172.30.0.0/16"]` (matches the compose subnet — this is the P0‑7 fix)
-   - `AssetValidation:BaseUrl` = `http://asset-validator:4300`, `AssetValidation:Authorization` = the secret
-   - `Csrf:Key`, `Jwt:Sessions`, `GameServer:TicketJwtKey`, `UserAgentBypassSecret`, `VerificationSecret`,
-     `GameServerAuthorization`, `BotAuthorization`, `RccAuthorization`, `Render:Authorization`
-   - `Directories:*` → point under `/data` (e.g. `/data/assets`, `/data/thumbnails`) so content survives rebuilds
-   - `Render:BaseUrl` = `ws://<windows-vm-ip>:3189` (only matters once the VM is up; harmless if absent)
-   - `OwnerUserId` = a **non‑1** account id you'll provision (security finding M23)
-3. **`services/Roblox/Roblox.Website/game-servers.json`** — your `GameServers` list (can be empty `{"GameServers":[]}` until Phase 4).
+2. **`services/Roblox/Roblox.Website/appsettings.json`** — **copy the committed template**
+   `appsettings.example.json` (it has every key in the right shape; the authoritative source is
+   `Program.cs`). This template was boot‑tested against the real .NET 10 image + Postgres/Redis, so it
+   starts as‑is once you fill the `REPLACE_WITH_*` placeholders from `secrets.txt`:
+   ```bash
+   cp services/Roblox/Roblox.Website/appsettings.example.json \
+      services/Roblox/Roblox.Website/appsettings.json   # then edit (on Unraid it lives in $VELINA_CONFIG_DIR)
+   ```
+   The template already sets the Docker‑topology values: `Postgres` (Host=postgres), `Redis`=`redis:6379`,
+   `BaseUrl`=`https://velina.lol`, `Frontend:BaseUrl`=`http://roblox-frontend:3000`,
+   `AssetValidation:BaseUrl`=`http://asset-validator:4300`, `TrustedProxyNetworks`=`["172.30.0.0/16"]`
+   (the P0‑7 fix — must match the compose subnet), and `Directories:*` under `/data`. You must set:
+   - all `REPLACE_WITH_*` secrets (from `secrets.txt`) — the `AssetValidation` one must equal the `.env`
+     `ASSET_VALIDATION_AUTHORIZATION`; the `Render`/`Rcc` ones must equal the VM's game‑server `authorization`.
+   - **`Render:BaseUrl`** → `ws://<windows-vm-ip>:3189` once the VM exists. Leaving the `CHANGE_ME` host is
+     harmless — the backend just retries the render WS in the background (verified in the boot test); the
+     website is unaffected.
+   - **Gotchas the boot test surfaced (don't skip):**
+     - **`Twitter:Bearer` must be NON‑empty** or the app crashes at boot (it's only used for the optional
+       Twitter‑verification flow). The template ships a harmless non‑empty placeholder — leave it unless you
+       use Twitter verification.
+     - **`Package*AssetId` / `SignupAssetIds` / `SignupAvatarAssetIds`** are `0`/empty in the template so it
+       boots, but avatars/signup won't be correct until you set them to **real seeded catalog asset IDs**.
+     - **`OwnerUserId`** = `1` works with the standard seed; for the M23 hardening, provision a different
+       staff account out‑of‑band (signup closed) and set that id instead.
+3. **`services/Roblox/Roblox.Website/game-servers.json`** — copy `game-servers.example.json` (an empty
+   `{"GameServers":[]}` list is fine until Phase 4).
+
+> **Content bundles:** the dirs `Directories:AdminBundle`, `EconomyChatBundle`, `XmlTemplates`, `JsonData`
+> and `public/` hold app content, not user data. The app **boots** with them empty, but the admin panel,
+> economy chat, and asset‑creation XML won't work until you populate them under `$VELINA_DATA_DIR` (build
+> `services/admin` → AdminBundle; copy `services/api/public/*` → public/JsonData/XmlTemplates as applicable).
 4. **`services/2016-roblox-main/config.json`** — `cp config.example.json config.json`, then set
    `publicRuntimeConfig.backend.baseUrl = "https://velina.lol"` and
    `apiFormat = "https://velina.lol/apisite/{0}{1}"` (path form), and `serverRuntimeConfig.backend.csrfKey`
@@ -194,7 +213,12 @@ automatically — no extra flag.
 On Unraid, create the layout and drop the files in place:
 ```bash
 mkdir -p /mnt/user/appdata/velina/config/cloudflared
-mkdir -p /mnt/user/appdata/velina/data/{assets,thumbnails,groupicons,public}
+# Create ALL data dirs the backend touches. The ones marked (boot) are wrapped in a
+# PhysicalFileProvider at startup and the app CRASHES if they don't exist.
+mkdir -p /mnt/user/appdata/velina/data/{assets,storage,thumbnails,groupicons,xmltemplates,jsondata,adminbundle,economychatbundle}
+mkdir -p /mnt/user/appdata/velina/data/public/UnsecuredContent   # (boot)
+mkdir -p /mnt/user/appdata/velina/data/public/img                # (boot)
+# also boot-critical: thumbnails, groupicons, economychatbundle (created above)
 cd /mnt/user/appdata/velina
 
 # copy these from the dev box (SMB/scp):
