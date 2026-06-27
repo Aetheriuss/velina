@@ -64,6 +64,12 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 | | test SDKs (Microsoft.NET.Test.Sdk 18.7, xunit 2.9.3, runner 3.1.5, coverlet 10) | ✅ done | Debug full sln builds |
 | | net10 source fixes (Chat.cs JsonSerializer ambiguity; TrustedProxy IPNetwork alias) | ✅ done | Release build; P0-7 trust preserved |
 | | backend Dockerfile + integration run.dockerfile → .NET 10 base images | ✅ done | **backend image `docker build` succeeds (libsodium23+ffmpeg on net10 base)** |
+| **Phase 6 (frontend)** | Next 12 → 14.2.35 + React 17 → 18.3.1 (Pages Router, react-jss kept) | ✅ done | **`next build` exit 0; react-jss SSR emits per-page CSS** |
+| | `<Link>` migration via central wrapper `legacyBehavior`+`passHref` (40+ call sites, one fix) | ✅ done | next build |
+| | remove enzyme (no React-18 adapter; only test is the proxy SSRF, no React) | ✅ done | **jest 4/4 pass** |
+| | frontend Dockerfile node:18 → node:22 | ✅ done | — |
+| **Phase 6 (runtime)** | api (migrations) Dockerfile node:18 → node:22 | ✅ done | — |
+| | Go validator go.mod `go 1.18` → `go 1.23` (build image already golang:1.23) | ✅ done | `go build` + `go vet` clean |
 
 ---
 
@@ -154,8 +160,14 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
     (provision the owner out-of-band with signup closed, set `OwnerUserId` ≠ 1). Add to go-live runbook.
   - **M19 BypassUrls normalization** (UNVERIFIED) — needs a dynamic path-normalization parity test
     against the proxy gate; left for a focused verification pass.
-- **Phase 6** (platform): **.NET 10 backend DONE** (see status table). Remaining: Next 14 / React 18
-  frontend; Node 18→22 + Go 1.18→current runtime bumps.
+- **Phase 6** (platform): **DONE** — .NET 10 backend, Next 14 / React 18 frontend, Node 18→22
+  (frontend + api), Go 1.18→1.23 (validator). See status table. Notes:
+  - **React 18 strict-mode**: `reactStrictMode:true` double-invokes effects in **dev only**. The one
+    long-lived subscription (SignalR chat, `components/chat/container.js`) already has a cleanup that
+    `.stop()`s the connection, so dev double-invoke is connect→cleanup→connect (no leak); production is
+    unaffected. Left as-is.
+  - **game-server** (Node, runs native in the Phase-4 VM, no Dockerfile): bump the VM's Node to 22 when
+    standing it up; `@types/node` already moved to ^18.19 during the dependency phase.
   - **Packages deliberately KEPT on net10** (compile + run fine, not vulnerable, major bump is high-risk/
     low-reward — revisit when the integration harness can validate them):
     - **JWT 8.7.0** — JWT 10/11 is a major API rewrite that would risk the verified HMAC-SHA512 alg
