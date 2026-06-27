@@ -50,6 +50,12 @@ Roblox.Configuration.HCaptchaPublicKey = configuration.GetSection("HCaptcha:Publ
 Roblox.Configuration.HCaptchaPrivateKey = configuration.GetSection("HCaptcha:Private").Value;
 Roblox.Configuration.GameServerAuthorization = configuration.GetSection("GameServerAuthorization").Value;
 Roblox.Configuration.BotAuthorization = configuration.GetSection("BotAuthorization").Value;
+// M6: signing keys for the user-agent-bypass and verification-phrase cookies. Persist via config so the
+// cookies survive a restart; fall back to a per-process CSPRNG value when unset (no longer a source literal).
+Roblox.Configuration.UserAgentBypassSecret = configuration.GetSection("UserAgentBypassSecret").Value
+    ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64);
+Roblox.Configuration.VerificationSecret = configuration.GetSection("VerificationSecret").Value
+    ?? Roblox.Libraries.CryptoRandom.TokenUrlSafe(64);
 // game-server config stuff
 IConfiguration gameServerConfig = new ConfigurationBuilder().AddJsonFile("game-servers.json").Build();
 Roblox.Configuration.GameServerIpAddresses = gameServerConfig.GetSection("GameServers").Get<IEnumerable<GameServerConfigEntry>>();

@@ -32,7 +32,12 @@ public static class Configuration
     public static string AssetValidationServiceAuthorization { get; set; }
     public static string BotAuthorization { get; set; }
     public static string RccAuthorization { get; set; }
-    public const string UserAgentBypassSecret = "503534DA-F2F8-4681-9B37-15EE9EAE88DC4D0FAE23-F672-4BC6-8D5F-E35A2939680DB1980985-AF9C-4B2E-B19E-67005FBAD27B";
+    // M6: moved out of source. Signing key for the user-agent-bypass JWT cookie. Populated from config
+    // at startup (Program.cs) with a per-process CSPRNG fallback when unset — same approach as the
+    // game-server ticket key (P1-2). Never ship a literal secret here.
+    public static string UserAgentBypassSecret { get; set; }
+    // M6: moved out of source. Signing key for the verification-phrase JWT cookie (WebsiteServices/Verification.cs).
+    public static string VerificationSecret { get; set; }
     public static long PackageShirtAssetId { get; set; }
     public static long PackagePantsAssetId { get; set; }
     public static long PackageLeftArmAssetId { get; set; }

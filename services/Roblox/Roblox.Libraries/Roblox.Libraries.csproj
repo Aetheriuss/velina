@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="JWT" Version="8.7.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.3" />
+    <!-- Pin transitive Newtonsoft.Json (pulled in at 10.0.3 via JWT) to a patched version (GHSA-5crp-9r3c-p9vr). -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.11" />
     <PackageReference Include="Sodium.Core" Version="1.2.3" />
   </ItemGroup>
 

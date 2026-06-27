@@ -1,7 +1,7 @@
 # Velina — Remediation & Deployment Progress
 
 Tracks execution of `DEPLOYMENT_PLAN.md` against `SECURITY_AUDIT.md`.
-Branch: `harden/p0-deployment`. Last updated: 2026-06-26.
+Branch: `harden/p0-deployment`. Last updated: 2026-06-27.
 
 **Toolchain available on this dev box** (for validation): .NET 9 + **.NET 10** SDKs (net6.0 builds
 fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.26** (`~/.local/go`),
@@ -36,6 +36,16 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 | | P1-5 SSRF lockdown (proxy.js) | ✅ done | 13/13 attack vectors + frontend image rebuild |
 | | P1-6 latent SQLi (ServiceBase) + Lua injection (game-server) | ✅ done | net6 build + `tsc` clean |
 | | P1-7 case-insensitive username uniqueness | ✅ done | **PG13: index created** |
+| **P2** | H1 ImageSharp 2.1.3 → 2.1.11 (stay on 2.1 line) | ✅ done | Release build; **gone from `dotnet list --vulnerable`** |
+| | M7 jsonwebtoken ^8 → ^9 + pin HS256 (frontend LoginCSRF) | ✅ done | lock=9.0.3; JS ESM syntax OK |
+| | axios ^0.21 → ^1.8 (frontend/game-server/api/admin/web) | ✅ done | lock=1.18.1; **game-server `tsc` clean** |
+| | ws ^7 → ^8 + @types/ws + @types/node ^18.19 (game-server/api) | ✅ done | lock ws=8.21.0; **game-server `tsc` clean** |
+| | express ^4.17 → ^4.21 (game-server/api/web) | ✅ done | lock=4.22.2 |
+| | generate `admin/` lockfile (+ un-ignore it) | ✅ done | `npm audit` = **0 vulns**; committed |
+| | Npgsql 6.0.1 → 6.0.11 (High, stays on 6.0.x — no tz semantics change) | ✅ done | Release build; gone from vulnerable list |
+| | Newtonsoft.Json → 13.0.3 (pin transitive High) | ✅ done | cascade-cleared System.* 4.3.0 Highs |
+| | Swashbuckle 6.2.3 → 6.6.2 (Moderate) | ✅ done | Release build |
+| | M6 UserAgentBypassSecret / VerificationSecret → config | ✅ done | Release build; generator emits both |
 
 ---
 
@@ -80,7 +90,8 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 ## Config/env operators must set (otherwise safe fallbacks apply)
 
 - `appsettings.json`: `Frontend:BaseUrl`, `TrustedProxyNetworks` (= compose subnet `172.30.0.0/16`),
-  `Csrf:Key`, `GameServer:TicketJwtKey`, plus all generated secrets (see `deploy/generate-secrets.sh`).
+  `Csrf:Key`, `GameServer:TicketJwtKey`, `UserAgentBypassSecret`, `VerificationSecret` (M6 — else they
+  rotate per restart), plus all generated secrets (see `deploy/generate-secrets.sh`).
 - Go validator env: `ASSET_VALIDATION_AUTHORIZATION` (= backend `AssetValidation:Authorization`).
 - `.env` (repo root) from `deploy/.env.example`.
 
@@ -89,12 +100,22 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 ## Remaining work
 
 ### Not started
-- **M6** (Medium): move hardcoded `UserAgentBypassSecret` / `VerificationSecret` constants to config.
-  (The CSRF-key + game-server-key parts of M6 were done in P1-2.)
-- **P2** (Medium + deps): ImageSharp ≥ 2.1.11, jsonwebtoken ≥ 9 (+ pinned alg), axios → 1.8.x,
-  ws/follow-redirects/express patches, generate `admin/` lockfile; 2FA; schema FKs + email/group-name
-  uniqueness; idempotency keys + paired trade-ledger rows; game-server/validator hardening (M10/M11/
-  M15/M21/M22/M16); remaining CSP/header polish; SFTP keys; lottery `StaffFilter`.
+- **P2 dependency remediation** — ✅ **done this session** (ImageSharp, jsonwebtoken+HS256, axios, ws,
+  express, admin lockfile; plus opportunistic Npgsql 6.0.11 / Newtonsoft 13.0.3 / Swashbuckle 6.6.2).
+  **M6 also done.** Deployable .NET backend now has **zero High/Critical** vulns.
+- **Residual advisories — deliberately deferred to Phase 6 (runtime/Next jump), not regressions:**
+  - **Next.js 12 auth-bypass (Critical, C4)** — mitigated now by the P0-5 `x-middleware-subrequest`
+    strip at the proxy; full fix is the Next 14 upgrade.
+  - frontend **`ws` 7.x (High)** — transitive via Next 12 (Next's HMR); force-override would break Next.
+  - frontend **`lodash` (High)** — no fix on the 4.x line (advisory range `<=4.17.23`, latest published
+    is 4.17.21); no real reach (React app, no `_.template` on user input).
+  - **RestSharp 107.3.0 (Moderate, .NET)** — transitive via `InfluxDB.Client` 4.0.0, which is **disabled**
+    (`Program.cs:31` Configure call commented out); force-pinning 110 breaks InfluxDB's 107-era API.
+  - game-server/api/web **brace-expansion / jsdiff** — deep dev-tooling transitives; game-server runs
+    native in the Phase-4 VM, api is migrations-only.
+- **P2 remaining (non-dependency)**: 2FA (M4); schema FKs + email/group-name uniqueness (M18);
+  idempotency keys + paired trade-ledger rows (M17/M24); game-server/validator hardening
+  (M10/M11/M15/M21/M22/M16); remaining CSP/header polish (M8); SFTP keys (M14); lottery `StaffFilter` (M12).
 - **Phase 6** (platform): .NET 10 LTS + Next 14 / React 18 + Node 22 / current Go. **Now buildable
   on this box** (.NET 10 SDK installed). Npgsql 6→10 timestamp/UTC semantics is the top hotspot.
 - **Phase 4** (live games): stand up the Windows VM (game-server native + RCCService.exe + converter);

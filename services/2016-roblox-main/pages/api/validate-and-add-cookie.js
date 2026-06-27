@@ -22,7 +22,7 @@ const generateCsrf = () => {
     signed: jwt.sign({
       csrf,
       iat: Date.now(),
-    }, csrfKey),
+    }, csrfKey, { algorithm: 'HS256' }),
     csrf: csrf,
   }
 }
@@ -34,7 +34,8 @@ const csrfValid = (req) => {
     const csrfCookie = req.cookies['.LoginCSRF'];
     if (typeof csrfValue === 'string') {
       if (typeof csrfCookie === 'string') {
-        const decoded = jwt.verify(csrfCookie, csrfKey);
+        // M7: pin the algorithm so an attacker can't downgrade to an unexpected alg.
+        const decoded = jwt.verify(csrfCookie, csrfKey, { algorithms: ['HS256'] });
         if (decoded.iat > Date.now() - (300 * 1000) && decoded.csrf === csrfValue) {
           return true;
         }
