@@ -87,6 +87,9 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
   M15 Go validator recover/instance-cap, M14 SFTP keys (M8/M22 verified done)
 - `6423ec9` — P2 economy integrity M17 (lock ordering, paired trade ledger, resale TOCTOU)
   + M4 2FA advertising stopgap
+- `2b7be36` — Phase 6: .NET 6 → .NET 10 LTS backend (Npgsql 10 timestamp-validated, Redis 2.13.17
+  clears System.Drawing.Common critical, net10 source fixes, Dockerfiles)
+- `e2e750a` — Phase 6: Next 14 / React 18 frontend + Node 22 (frontend+api) / Go 1.23 (validator)
 
 ---
 
