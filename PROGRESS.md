@@ -71,6 +71,10 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 - `5cef4fa` — docs: PROGRESS.md tracking P0 + DEP + P1
 - `e3a4264` — P2 dependency remediation (ImageSharp/jwt+HS256/axios/ws/express/admin-lock,
   +Npgsql 6.0.11/Newtonsoft 13/Swashbuckle 6.6.2) + M6 secrets-to-config
+- `57d54d4` — P2 non-dep hardening: M12 lottery authz, M20 log scrub, M16 SSRF, M18 uniqueness,
+  M15 Go validator recover/instance-cap, M14 SFTP keys (M8/M22 verified done)
+- `6423ec9` — P2 economy integrity M17 (lock ordering, paired trade ledger, resale TOCTOU)
+  + M4 2FA advertising stopgap
 
 ---
 
