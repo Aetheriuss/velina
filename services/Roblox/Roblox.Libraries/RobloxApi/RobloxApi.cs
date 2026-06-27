@@ -159,6 +159,89 @@ public class RobloxApi
         AutomaticDecompression = DecompressionMethods.All,
     });
 
+    // M16: a non-redirect-following client used for fetching server-returned asset URLs (the `location`
+    // field from Roblox's assetdelivery API). Auto-redirect is OFF so each hop can be re-validated before
+    // it is fetched — otherwise a redirect to an internal host (e.g. http://172.30.x or http://localhost)
+    // would be followed blindly (SSRF).
+    private static HttpClient _noRedirectClient { get; } = new(new HttpClientHandler()
+    {
+        AutomaticDecompression = DecompressionMethods.All,
+        AllowAutoRedirect = false,
+    });
+
+    // Only these host suffixes are valid asset-content origins. The `location` field should always be a
+    // Roblox CDN URL; anything else (or a manipulated value) is rejected.
+    private static readonly string[] AllowedAssetHostSuffixes =
+        { ".rbxcdn.com", ".roblox.com", ".rbxcdn.net" };
+
+    private static bool IsDisallowedAddress(IPAddress ip)
+    {
+        if (IPAddress.IsLoopback(ip)) return true;
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            var b = ip.GetAddressBytes();
+            if (b[0] == 10) return true;                                   // 10.0.0.0/8
+            if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) return true;      // 172.16.0.0/12 (covers velina-net 172.30/16)
+            if (b[0] == 192 && b[1] == 168) return true;                   // 192.168.0.0/16
+            if (b[0] == 169 && b[1] == 254) return true;                   // 169.254.0.0/16 link-local (cloud metadata)
+            if (b[0] == 127) return true;                                  // loopback
+            if (b[0] == 0) return true;                                    // 0.0.0.0/8
+        }
+        else if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+        {
+            if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || ip.IsIPv6UniqueLocal) return true;
+            var mapped = ip.IsIPv4MappedToIPv6 ? ip.MapToIPv4() : null;     // re-check ::ffff:10.0.0.1 style
+            if (mapped != null && IsDisallowedAddress(mapped)) return true;
+        }
+        return false;
+    }
+
+    // Validates a server-returned asset URL before fetching it (scheme/host/userinfo/private-IP). Throws on reject.
+    private static void ValidateOutboundAssetUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            throw new Exception("Refusing to fetch malformed asset URL");
+        if (uri.Scheme != Uri.UriSchemeHttps)
+            throw new Exception("Refusing to fetch non-https asset URL");
+        if (!string.IsNullOrEmpty(uri.UserInfo))
+            throw new Exception("Refusing to fetch asset URL containing userinfo");
+        var host = uri.Host;
+        var hostAllowed = AllowedAssetHostSuffixes.Any(s =>
+            host.EndsWith(s, StringComparison.OrdinalIgnoreCase)) ||
+            host.Equals("roblox.com", StringComparison.OrdinalIgnoreCase);
+        if (!hostAllowed)
+            throw new Exception("Refusing to fetch asset URL from non-allowlisted host: " + host);
+        // Block hosts that resolve to private/loopback/link-local addresses (defeats DNS-rebinding to internal services).
+        IPAddress[] addresses;
+        try { addresses = Dns.GetHostAddresses(host); }
+        catch { throw new Exception("Could not resolve asset host: " + host); }
+        if (addresses.Length == 0 || addresses.Any(IsDisallowedAddress))
+            throw new Exception("Refusing to fetch asset URL resolving to a private address");
+    }
+
+    // Fetches an asset URL safely: validates the URL and every redirect hop (max 5), blocking SSRF to internal hosts.
+    private async Task<HttpResponseMessage> GetValidatedAssetResponse(string url)
+    {
+        for (var hop = 0; hop < 6; hop++)
+        {
+            ValidateOutboundAssetUrl(url);
+            var resp = await _noRedirectClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+            if (resp.StatusCode is HttpStatusCode.Moved or HttpStatusCode.Found or HttpStatusCode.Redirect
+                or HttpStatusCode.SeeOther or HttpStatusCode.TemporaryRedirect or HttpStatusCode.PermanentRedirect)
+            {
+                var location = resp.Headers.Location?.ToString();
+                resp.Dispose();
+                if (string.IsNullOrEmpty(location))
+                    throw new Exception("Redirect without a Location header in asset fetch");
+                // Resolve relative redirects against the previous URL, then re-validate at the loop top.
+                url = new Uri(new Uri(url), location).ToString();
+                continue;
+            }
+            return resp;
+        }
+        throw new Exception("Too many redirects fetching asset URL");
+    }
+
     public async Task<ProductInfoWithAssetDelivery> GetProductInfoAssetDelivery(long assetId)
     {
         // Literally all it gets is the "assetTypeId". Everything else is blank.
@@ -313,7 +396,8 @@ public class RobloxApi
 
     public async Task<Stream> GetStreamAsync(string url)
     {
-        var strResult = await _client.GetAsync(url);
+        // M16: validate the URL + every redirect hop against an allowlist and block private IPs (SSRF).
+        var strResult = await GetValidatedAssetResponse(url);
         if (!strResult.IsSuccessStatusCode)
             throw new Exception("Bad response in GetStreamAsync: " + strResult.StatusCode);
         return await strResult.Content.ReadAsStreamAsync();
@@ -338,7 +422,8 @@ public class RobloxApi
             if (string.IsNullOrEmpty(bod.location))
                 throw new Exception("Roblox did not give a URL for this asset content. Is the URL valid?");
 
-            var strResult = await _client.GetAsync(bod.location);
+            // M16: same SSRF hardening as GetStreamAsync — the `location` is a server-returned URL.
+            var strResult = await GetValidatedAssetResponse(bod.location);
             return await strResult.Content.ReadAsStreamAsync();
         }
     }

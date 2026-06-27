@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 type ValidationResponse struct {
@@ -89,6 +90,10 @@ func main() {
 	app := fiber.New(fiber.Config{
 		BodyLimit: getBodyLimit(),
 	})
+
+	// M15: backstop so a panic anywhere in a handler (e.g. the third-party RBXL decoder on crafted
+	// input) is turned into a 500 instead of crashing the process.
+	app.Use(recover.New())
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("AssetValidationServiceV2 OK")

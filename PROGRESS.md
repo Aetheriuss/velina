@@ -46,6 +46,14 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 | | Newtonsoft.Json → 13.0.3 (pin transitive High) | ✅ done | cascade-cleared System.* 4.3.0 Highs |
 | | Swashbuckle 6.2.3 → 6.6.2 (Moderate) | ✅ done | Release build |
 | | M6 UserAgentBypassSecret / VerificationSecret → config | ✅ done | Release build; generator emits both |
+| **P2 (non-dep)** | M12 lottery `get-users-eligible` / `get-items` → StaffFilter | ✅ done | Release build |
+| | M20 request logging: log Path only, never query string | ✅ done | Release build |
+| | M8 CSP + security headers (backend) + frontend via single-ingress proxy | ✅ **already done** | config-derived CSP; headers set pre-proxy |
+| | M16 SSRF in `RobloxApi.GetStreamAsync` / asset-content fetch | ✅ done | host allowlist + private-IP block + per-hop redirect re-validation |
+| | M18 group-name + (dormant) email uniqueness | ✅ done | **PG13: indexes enforce; case-collision + verified-dup rejected** |
+| | M15 Go validator: `recover()` + instance-count cap | ✅ done | `go build` + `go vet` clean |
+| | M22 Go validator: concurrency off-by-one + BodyLimit | ✅ **already done** (P0-2) | — |
+| | M14 asset-backup SFTP: execFile argv, key auth / `sshpass -e`, known_hosts | ✅ done | `node --check` |
 
 ---
 

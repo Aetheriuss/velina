@@ -19,7 +19,9 @@ public class RobloxLoggingMiddleware
         await _next(ctx);
         watch.Stop();
 
-        var str = $"[{ctx.Request.Method.ToUpper()}] {ctx.Request.GetEncodedUrl()} - {watch.ElapsedMilliseconds}ms";
+        // M20: log the path only, never the query string — it can carry tokens/secrets (e.g. reset
+        // tokens, game-join tickets, the game-server token in WS URLs).
+        var str = $"[{ctx.Request.Method.ToUpper()}] {ctx.Request.Path} - {watch.ElapsedMilliseconds}ms";
         Console.WriteLine(str);
     }
 }

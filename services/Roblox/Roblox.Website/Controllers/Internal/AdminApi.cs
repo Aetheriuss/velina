@@ -1752,7 +1752,9 @@ Thank you for your understanding,
         };
     }
 
-    [HttpGet("lottery/get-users-eligible")]
+    // M12: gate behind StaffFilter — this leaks usernames + dormant-account holdings. Still callable
+    // internally by RunLottery (direct method call, not via HTTP, so the filter does not apply there).
+    [HttpGet("lottery/get-users-eligible"), StaffFilter(Access.RunLottery)]
     public async Task<IEnumerable<UserLotteryEntry>> GetEligibleLotteryUsers()
     {
         var eligibleUsers = await db.QueryAsync<UserLotteryEntry>(
@@ -1765,7 +1767,8 @@ Thank you for your understanding,
         return eligibleUsers;
     }
 
-    [HttpGet("lottery/get-items")]
+    // M12: gate behind StaffFilter — leaks valuable limited-item holdings of dormant accounts.
+    [HttpGet("lottery/get-items"), StaffFilter(Access.RunLottery)]
     public async Task<IEnumerable<LotteryItemEntry>> GetLotteryItems()
     {
         var eligibleItems = await db.QueryAsync<LotteryItemEntry>("SELECT a.name, a.id as assetId, a.recent_average_price as recentAveragePrice, u.id as userId, u.online_at as onlineAt, u.username, ua.id as userAssetId FROM user_asset ua INNER JOIN \"user\" u on u.id = ua.user_id INNER JOIN \"asset\" a ON a.id = ua.asset_id WHERE u.id != 1 AND u.online_at <= :time AND (a.is_limited OR a.is_limited_unique) AND NOT a.is_for_sale AND u.status = :status ORDER BY u.online_at LIMIT 1000", new
