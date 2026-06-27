@@ -1,5 +1,7 @@
 using System.Net;
-using Microsoft.AspNetCore.HttpOverrides;
+// .NET 8+ added System.Net.IPNetwork, which collides with the ASP.NET type. ForwardedHeadersOptions
+// .KnownNetworks still uses Microsoft.AspNetCore.HttpOverrides.IPNetwork, so pin the alias to that one.
+using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 namespace Roblox.Website.Lib;
 

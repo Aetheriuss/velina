@@ -58,6 +58,12 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
 | | M17 paired trade-Robux ledger rows (counts toward transfer caps) | ✅ done | Release build; new TransactionSubType + 2 trx classes |
 | | M17 resale price/seller recheck inside the lock (TOCTOU) | ✅ done | Release build |
 | | M4 stop advertising 2FA that isn't implemented (`displayTwoStepVerification=false`) | ✅ done (stopgap) | Release build |
+| **Phase 6 (.NET)** | All 17 csproj `net6.0` → `net10.0` | ✅ done | Release (deployable) 0 err; Debug full sln 0 err |
+| | Npgsql 6.0.11 → 10.0.3 (top hotspot) | ✅ done | **timestamp round-trip validated on PG: Kind=Utc → timestamp/timestamptz, WHERE compares** |
+| | Dapper 2.0.123 → 2.1.79; StackExchange.Redis 2.6.48 → 2.13.17; Sodium.Core 1.2.3 → 1.4.1; RedLock.net 2.3.1 → 2.3.2 | ✅ done | Release build; **System.Drawing.Common CRITICAL cleared** (was transitive via Redis) |
+| | test SDKs (Microsoft.NET.Test.Sdk 18.7, xunit 2.9.3, runner 3.1.5, coverlet 10) | ✅ done | Debug full sln builds |
+| | net10 source fixes (Chat.cs JsonSerializer ambiguity; TrustedProxy IPNetwork alias) | ✅ done | Release build; P0-7 trust preserved |
+| | backend Dockerfile + integration run.dockerfile → .NET 10 base images | ✅ done | **backend image `docker build` succeeds (libsodium23+ffmpeg on net10 base)** |
 
 ---
 
@@ -148,8 +154,20 @@ fine; .NET 6 *runtime* absent, so backend runs only in Docker), Node 22, **Go 1.
     (provision the owner out-of-band with signup closed, set `OwnerUserId` ≠ 1). Add to go-live runbook.
   - **M19 BypassUrls normalization** (UNVERIFIED) — needs a dynamic path-normalization parity test
     against the proxy gate; left for a focused verification pass.
-- **Phase 6** (platform): .NET 10 LTS + Next 14 / React 18 + Node 22 / current Go. **Now buildable
-  on this box** (.NET 10 SDK installed). Npgsql 6→10 timestamp/UTC semantics is the top hotspot.
+- **Phase 6** (platform): **.NET 10 backend DONE** (see status table). Remaining: Next 14 / React 18
+  frontend; Node 18→22 + Go 1.18→current runtime bumps.
+  - **Packages deliberately KEPT on net10** (compile + run fine, not vulnerable, major bump is high-risk/
+    low-reward — revisit when the integration harness can validate them):
+    - **JWT 8.7.0** — JWT 10/11 is a major API rewrite that would risk the verified HMAC-SHA512 alg
+      pinning in `EasyJwt` (a security property). No CVE; works on net10. Keep until integration-tested.
+    - **InfluxDB.Client 4.0.0** — the only thing it leaves is the RestSharp Moderate, and InfluxDB metrics
+      are disabled (`Program.cs:31`); bumping to 5.x rewrites `Metrics.cs` for no live benefit.
+    - **FFMpegCore 4.6.0**, **Swashbuckle.AspNetCore 6.6.2** (dev-only), **ImageSharp 2.1.11** (stay on
+      2.1 per RISK-IMG) — all work on net10, none vulnerable.
+  - **Integration harness compile note:** the full sln builds 0-error in **Debug** (how the harness runs);
+    in **Release** the one `userSessionForTests` error is expected and correct — it's a test-only auth
+    bypass behind `#if DEBUG` that must NOT exist in Release. The deployable Website project builds clean
+    in Release.
 - **Phase 4** (live games): stand up the Windows VM (game-server native + RCCService.exe + converter);
   wire `Render:BaseUrl`; **resolve RISK-GAMEWS** (is game transport WebSocket-over-HTTPS?).
 

@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1
-# Velina backend (.NET 6, ASP.NET Core) — DEP-1.
-# NOTE: still net6.0 for go-live; the .NET 10 LTS migration is Phase 6 of the plan.
+# Velina backend (.NET 10 LTS, ASP.NET Core) — DEP-1 / Phase 6.
 # Build context is services/Roblox (the solution directory).
 
 # ---- build ----
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet restore Roblox.sln
@@ -17,7 +16,7 @@ RUN dotnet publish Roblox.Website/Roblox.Website.csproj \
       -o /app --no-restore
 
 # ---- runtime ----
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 # Native deps: libsodium (Sodium.Core) + ffmpeg (FFMpegCore); curl for the healthcheck.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libsodium23 ffmpeg curl \

@@ -201,7 +201,9 @@ public class ChatService : ServiceBase, IService
             {
                 try
                 {
-                    var data = JsonSerializer.Deserialize<T>(msg.Message);
+                    // .NET 10: RedisValue converts implicitly to both string and byte[], so pin the
+                    // string overload explicitly to avoid an ambiguous JsonSerializer.Deserialize call.
+                    var data = JsonSerializer.Deserialize<T>(msg.Message.ToString());
                     if (data != null)
                     {
                         handler(data);
