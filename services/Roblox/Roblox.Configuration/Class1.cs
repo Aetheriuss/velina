@@ -25,6 +25,9 @@ public static class Configuration
     public static string FrontendBaseUrl { get; set; } = "http://localhost:3000";
     public static string HCaptchaPublicKey { get; set; }
     public static string HCaptchaPrivateKey { get; set; }
+    // hCaptcha is on unless "HCaptcha:Enabled" is explicitly "false". When off, captcha verification is
+    // skipped and the widget is not rendered (use when the site keys are missing/invalid).
+    public static bool CaptchaEnabled { get; set; } = true;
     public static IEnumerable<GameServerConfigEntry> GameServerIpAddresses { get; set; }
     public static string GameServerAuthorization { get; set; }
     public static string RobloxAppPrefix { get; set; } = "rbxeconsim:";

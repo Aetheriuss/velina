@@ -48,6 +48,9 @@ Roblox.Configuration.FrontendBaseUrl = configuration.GetSection("Frontend:BaseUr
 Roblox.Website.Lib.TrustedProxy.Configure(configuration.GetSection("TrustedProxyNetworks").Get<IEnumerable<string>>());
 Roblox.Configuration.HCaptchaPublicKey = configuration.GetSection("HCaptcha:Public").Value;
 Roblox.Configuration.HCaptchaPrivateKey = configuration.GetSection("HCaptcha:Private").Value;
+// Disable captcha by setting "HCaptcha:Enabled": false (e.g. when site keys are missing/invalid). Default on.
+Roblox.Configuration.CaptchaEnabled =
+    !string.Equals(configuration.GetSection("HCaptcha:Enabled").Value, "false", StringComparison.OrdinalIgnoreCase);
 Roblox.Configuration.GameServerAuthorization = configuration.GetSection("GameServerAuthorization").Value;
 Roblox.Configuration.BotAuthorization = configuration.GetSection("BotAuthorization").Value;
 // M6: signing keys for the user-agent-bypass and verification-phrase cookies. Persist via config so the
