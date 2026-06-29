@@ -119,8 +119,12 @@ services:
       migrations:
         condition: service_completed_successfully
     networks: [velina-net]
-    # no published ports — cloudflared reaches it on velina-net. Expose for the LAN bridge only
-    # if the Windows VM's game-server must call back to :5000 (plan §1); keep it LAN-only.
+    ports:
+      # LAN-only callback for the Windows VM's game-server (/gs/* + thumbnail upload). Bind to the
+      # Unraid LAN IP via BACKEND_LAN_IP in .env (NOT 0.0.0.0) so :5000 is reachable by the VM but not
+      # world-exposed. Public traffic still enters only through cloudflared. (DEPLOYMENT_GUIDE §7.)
+      # Default 127.0.0.1 = loopback only (no VM / no LAN exposure) until you set BACKEND_LAN_IP.
+      - "${BACKEND_LAN_IP:-127.0.0.1}:5000:5000"
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5000/healthz || exit 1"]
       interval: 30s
