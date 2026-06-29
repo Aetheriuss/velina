@@ -132,6 +132,7 @@ public class CsrfMiddleware : ControllerServicesExtended
         "/auth",
         "/auth/signup",
         "/auth/discord",
+        "/auth/choose-username",
         "/auth/credits",
         "/auth/application",
         "/auth/application-check",
