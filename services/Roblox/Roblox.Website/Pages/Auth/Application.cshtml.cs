@@ -92,6 +92,8 @@ public class Application : RobloxPageModel
 
     public async Task<IActionResult> OnGet()
     {
+        // Registration is Discord-only — the legacy application flow no longer creates accounts.
+        return Redirect("/auth/discord/login");
         var apps = new ApplicationWebsiteService(HttpContext);
         try
         {
@@ -128,6 +130,8 @@ public class Application : RobloxPageModel
 
     public async Task<IActionResult> OnPost()
     {
+        // Registration is Discord-only — the legacy application flow no longer creates accounts.
+        return Redirect("/auth/discord/login");
         var apps = new ApplicationWebsiteService(HttpContext);
         try
         {
