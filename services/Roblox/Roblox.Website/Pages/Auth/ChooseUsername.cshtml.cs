@@ -76,10 +76,17 @@ public class ChooseUsername : RobloxPageModel
             var created = await services.users.CreateUser(username, accountPassword, Gender.Unknown, null, pending.discordId);
             createdUserId = created.userId;
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            // Most likely a race on the username unique check.
-            errorMessage = "That username is already taken. Please choose another.";
+            // Only report "taken" if the name actually became unavailable (a race on the unique check);
+            // otherwise surface a real error instead of silently mislabelling every failure as "taken".
+            if (!await services.users.IsNameAvailableForSignup(username))
+            {
+                errorMessage = "That username is already taken. Please choose another.";
+                return Page();
+            }
+            Roblox.Logging.Writer.Info(Roblox.Logging.LogGroup.SignUp, "Discord signup CreateUser failed: {0}", e.Message);
+            errorMessage = "Something went wrong creating your account. Please try again.";
             return Page();
         }
 

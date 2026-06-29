@@ -1075,8 +1075,6 @@ public class UsersService : ServiceBase, IService
                     id = Guid.NewGuid().ToString(),
                     preferred_name = username,
                     about = "Discord signup",
-                    matrix_name = "",
-                    matrix_domain = "",
                     social_presence = "discord",
                     user_id = userId,
                     author_id = (long?)1,
