@@ -20,7 +20,9 @@
                     <p class="text-danger">@Model.errorMessage</p>
                 }
                 <form method="post">
-                    <input type="text" placeholder="Username" name="username" value="@Model.suggestedUsername" class="form-control mb-2" autofocus/>
+                    <input type="text" placeholder="Username" name="username" value="@(Model.username ?? Model.suggestedUsername)" class="form-control mb-2" autofocus/>
+                    <input type="password" placeholder="Password (optional)" name="password" autocomplete="new-password" class="form-control mb-1"/>
+                    <small class="text-muted d-block mb-2">Optional. Set a password if you'd like to sign in with your username and password as well as Discord. Leave it blank to use Discord only.</small>
                     <button type="submit" class="btn btn-success w-100">Create my account</button>
                 </form>
             </div>

@@ -161,14 +161,9 @@ public class Login : RobloxPageModel
             return new PageResult();
         }
 
-        // Password login is a STAFF-ONLY break-glass path; everyone else signs in with Discord (the only
-        // public registration/login). Discord-created accounts carry an unusable random password, so this
-        // also fails closed for them. Provision the owner/staff account out-of-band to use this.
-        if (!await Roblox.Website.Filters.StaffFilter.IsStaff(userId))
-        {
-            errorMessage = "Password login is for staff only. Please sign in with Discord.";
-            return new PageResult();
-        }
+        // Password login is open to any account that has set a password (chosen on the Discord
+        // choose-username step). Discord accounts that didn't choose one carry an unusable random
+        // password, so this path simply fails closed for them and they sign in with Discord instead.
 
         if (applicationId != null)
         {

@@ -8,6 +8,8 @@ public class ChooseUsername : RobloxPageModel
 {
     [BindProperty]
     public string? username { get; set; }
+    [BindProperty]
+    public string? password { get; set; }
     public string? suggestedUsername { get; set; }
     public string? errorMessage { get; set; }
 
@@ -50,13 +52,28 @@ public class ChooseUsername : RobloxPageModel
             return Page();
         }
 
+        // The password is optional. If the user sets one they can also log in with username + password
+        // (in addition to Discord); if they leave it blank we store a random unusable value so Discord
+        // stays the only way into the account.
+        string accountPassword;
+        if (!string.IsNullOrEmpty(password))
+        {
+            if (!services.users.IsPasswordValid(password))
+            {
+                errorMessage = "That password is too short. It must be at least 3 characters, or leave it blank to sign in with Discord only.";
+                return Page();
+            }
+            accountPassword = password;
+        }
+        else
+        {
+            accountPassword = Roblox.Libraries.CryptoRandom.TokenUrlSafe(48);
+        }
+
         long createdUserId;
         try
         {
-            // No usable password: Discord is the only login for this account. The owner break-glass is
-            // a separate, pre-provisioned account. The random value just satisfies the password column.
-            var unusablePassword = Roblox.Libraries.CryptoRandom.TokenUrlSafe(48);
-            var created = await services.users.CreateUser(username, unusablePassword, Gender.Unknown, null, pending.discordId);
+            var created = await services.users.CreateUser(username, accountPassword, Gender.Unknown, null, pending.discordId);
             createdUserId = created.userId;
         }
         catch (Exception)
