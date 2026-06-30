@@ -82,7 +82,6 @@ const NavSideBar = props => {
       <LinkEntry name='Inventory' url={'/users/' + authStore.userId + '/inventory'} icon='icon-nav-inventory' />
       <LinkEntry name='Trade' url='/My/Trades.aspx' icon='icon-nav-trade' count={authStore.notificationCount.trades} />
       <LinkEntry name='Groups' url='/My/Groups.aspx' icon='icon-nav-group' />
-      <LinkEntry name='Forums' url='/Forum/Default.aspx' icon='icon-nav-forum' />
       <LinkEntry name='Blog' url='/info/blog' icon='icon-nav-blog' />
       <a href='/BuildersClub/Upgrade.ashx'><p className={s.upgradeNowButton}>Upgrade Now</p></a>
     </div>

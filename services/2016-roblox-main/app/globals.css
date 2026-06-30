@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 2020-era Roblox design tokens.
+ * One token set, two themes. `data-theme` is set on <html> by ThemeProvider
+ * (and by the inline FOUC-guard script in layout.tsx before first paint).
+ *
+ * Palette references the ~2020 roblox.com look: #00A2FF accent, rounded
+ * surfaces, a dark top navigation bar in both themes.
+ */
+:root,
+[data-theme='light'] {
+  --rbx-accent: #00a2ff;
+  --rbx-accent-hover: #0092e6;
+  --rbx-bg: #f2f4f5;
+  --rbx-surface: #ffffff;
+  --rbx-surface-alt: #f7f8f8;
+  --rbx-text: #393b3d;
+  --rbx-text-muted: #757575;
+  --rbx-border: #e3e3e3;
+  --rbx-nav-bg: #232527;
+  --rbx-positive: #00b06f;
+  --rbx-negative: #e84c3d;
+  --rbx-radius: 8px;
+  --rbx-shadow: 0 1px 3px rgba(25, 27, 29, 0.12);
+}
+
+[data-theme='dark'] {
+  --rbx-accent: #00a2ff;
+  --rbx-accent-hover: #33b5ff;
+  --rbx-bg: #191b1d;
+  --rbx-surface: #232527;
+  --rbx-surface-alt: #2e3133;
+  --rbx-text: #ffffff;
+  --rbx-text-muted: #bdbebe;
+  --rbx-border: #3b3d3e;
+  --rbx-nav-bg: #16181a;
+  --rbx-positive: #00b06f;
+  --rbx-negative: #e84c3d;
+  --rbx-radius: 8px;
+  --rbx-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/*
+ * Scoped reset for the App Router tree only. Tailwind preflight is disabled
+ * globally (see tailwind.config.ts) so the legacy Bootstrap pages are untouched;
+ * we re-establish the essentials under the app shell wrapper instead.
+ */
+.rbx-app {
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: var(--rbx-bg);
+  color: var(--rbx-text);
+  font-family: var(--font-sans), 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.rbx-app *,
+.rbx-app *::before,
+.rbx-app *::after {
+  box-sizing: border-box;
+}

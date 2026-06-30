@@ -66,7 +66,7 @@ const ModalChangeUsername = props => {
         }}></ActionButton>
       </div>
       <div className='mt-4'>
-        <p><span className='fw-700'>Important: </span> Original account creation date and forum post count will carry over to your new username. Previous forum posts will appear under your old username and will NOT carry over to your new username.</p>
+        <p><span className='fw-700'>Important: </span> Your original account creation date will carry over to your new username.</p>
       </div>
     </div>
   </div>

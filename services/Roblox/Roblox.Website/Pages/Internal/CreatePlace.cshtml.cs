@@ -129,12 +129,6 @@ public class CreatePlace : RobloxPageModel
             return false;
         }
 
-        var postCount = await services.forums.GetPostCount(userId);
-        if (postCount < 2)
-        {
-            log.Info("user post count is less than 2");
-            return false;
-        }
 #endif
         Writer.Info(LogGroup.AbuseDetection, "User passed IsActiveEnoughForPlace: {0}", userId);
 

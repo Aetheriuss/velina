@@ -41,14 +41,15 @@ public enum Access
     GetPreviousUsernames,
     DeleteUsername,
     DeleteComment,
-    DeleteForumPost,
-    RequestAssetReRender,
+    // 39 retired: DeleteForumPost (forums removed). Ordinal preserved — Access is
+    // stored as an integer in user_permission, so downstream values must not shift.
+    RequestAssetReRender = 40,
     GetProductDetails,
     SetAssetProduct,
     CreateAsset,
     CreateClothingAsset,
-    CopyClothingFromRoblox,
-    CreateAssetVersion,
+    // 45 retired: CopyClothingFromRoblox (clothing-stealer removed). Ordinal preserved (int-backed).
+    CreateAssetVersion = 46,
     MigrateAssetFromRoblox,
     CreateGameForUser,
     RequestWebsiteUpdate,
@@ -73,15 +74,15 @@ public enum Access
     GetGroupStatus,
     DeleteGroupStatus,
     ResetGroup,
-    LockForumThread,
-    ManageReports,
+    // 71 retired: LockForumThread (forums removed). Ordinal preserved (int-backed).
+    ManageReports = 72,
     GetAllAssetOwners,
     GetDetailsFromThumbnail,
     SetPermissions, // fake perm
     GetGameServers,
     MakeItemLimited,
-    CreateAssetCopiedFromRoblox,
-    CreateBundleCopiedFromRoblox,
+    // 78 retired: CreateAssetCopiedFromRoblox (clothing-stealer copy endpoint removed). Ordinal preserved.
+    CreateBundleCopiedFromRoblox = 79,
     GetSaleHistoryForAsset,
     RefundAndDeleteFirstPartyAssetSale,
     ManagePromocodes,

@@ -42,9 +42,9 @@ public enum FeatureFlag
     CreateInvitesEnabled,
     InvitesEnabled,
     AllowAccessToAllRequests,
-    ForumsEnabled,
-    ForumPostingEnabled,
-    CurrencyExchangeEnabled,
+    // 34/35 retired: ForumsEnabled, ForumPostingEnabled (forums removed).
+    // Ordinal preserved so cached flag indices stay stable.
+    CurrencyExchangeEnabled = 36,
     // Features End. Below are fixes.
     UseGameJoinV2,
     SupportTicket,

@@ -123,11 +123,6 @@ public class DeleteUsernameRequest
     public long userId { get; set; }
 }
 
-public class DeleteForumPostRequest
-{
-    public long postId { get; set; }
-}
-
 public class ReRenderRequest
 {
     public long assetId { get; set; }
@@ -204,12 +199,6 @@ public class CreateAssetVersionRequest
 public class DateTimeSerialized
 {
     public DateTime clock { get; set; }
-}
-
-public class CopyAssetRequest
-{
-    public long assetId { get; set; }
-    public bool force { get; set; }
 }
 
 public class AssetVersionWithIdEntry

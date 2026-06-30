@@ -51,12 +51,6 @@
 			permission: 'GetAllAssetComments',
 		},
 		{
-			name: 'Forums',
-			link: '/admin/forums',
-			icon: BookIcon,
-			permission: 'LockForumThread',
-		},
-		{
 			name: "Asset Moderation",
 			link: "/admin/asset/approval",
 			icon: CheckSquareIcon,
@@ -156,11 +150,6 @@
 				{#if rank.hasPermission("CreateAsset")}
 					<li class="nav-item ml-4">
 						<a use:link class="nav-link" href="/admin/asset/create"><FilePlusIcon /> Create Item</a>
-					</li>
-				{/if}
-				{#if rank.hasPermission("CreateAssetCopiedFromRoblox")}
-					<li class="nav-item ml-4">
-						<a use:link class="nav-link" href="/admin/asset/copy"><CopyIcon /> Copy Asset</a>
 					</li>
 				{/if}
 				{#if rank.hasPermission("SetAssetProduct")}

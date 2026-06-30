@@ -1671,36 +1671,6 @@ Thank you for your understanding,
         });
     }
     
-    [HttpPost("delete-forum-post"), StaffFilter(Access.DeleteForumPost)]
-    public async Task DeleteForumPost([Required, FromBody] DeleteForumPostRequest request)
-    {
-        var details = await db.QuerySingleOrDefaultAsync("SELECT id, thread_id FROM forum_post WHERE id = :id", new
-        {
-            id = request.postId,
-        });
-        if (details == null)
-            throw new StaffException("Post does not exist");
-        if (details.thread_id == null)
-        {
-            await db.ExecuteAsync("DELETE FROM forum_post WHERE id = :id OR thread_id = :id",
-                new { id = request.postId });
-        }
-        else
-        {
-            await db.ExecuteAsync("UPDATE forum_post SET post = '[ Content Deleted ]' WHERE id = :id",
-                new { id = request.postId });
-        }
-    }
-
-    [HttpPost("lock-forum-thread"), StaffFilter(Access.LockForumThread)]
-    public async Task LockForumThread(long threadId)
-    {
-        await db.ExecuteAsync("UPDATE forum_post SET is_locked = true WHERE id = :id AND thread_id IS NULL", new
-        {
-            id = threadId,
-        });
-    }
-
     [HttpPost("lottery/run"), StaffFilter(Access.RunLottery)]
     public async Task<dynamic> RunLottery()
     {
@@ -1904,93 +1874,6 @@ Thank you for your understanding,
     }
 
     //  fuck copy bundle
-
-    [HttpPost("asset/copy-from-roblox"), StaffFilter(Access.CreateAssetCopiedFromRoblox)]
-    public async Task<dynamic> CopyAssetFromRoblox([Required, FromBody] CopyAssetRequest request)
-    {
-        if (!request.force)
-        {
-            // Check duplicate id first
-            try
-            {
-                // Check if already exists
-                var ourAssetId = await services.assets.GetAssetIdFromRobloxAssetId(request.assetId);
-                return new
-                {
-                    assetId = ourAssetId,
-                };
-            }
-            catch (RecordNotFoundException)
-            {
-                // Don't care
-            }
-        }
-        
-        var details = await services.robloxApi.GetProductInfo(request.assetId, true);
-        var allowedTypes = new List<Models.Assets.Type>()
-        {
-            Type.Hat,
-            Type.HairAccessory,
-            Type.FrontAccessory,
-            Type.BackAccessory,
-            Type.WaistAccessory,
-            Type.NeckAccessory,
-            Type.Gear,
-            Type.Face,
-            Type.ShoulderAccessory,
-            Type.FaceAccessory,
-            Type.Head,
-        };
-        if (details.AssetTypeId == null || !allowedTypes.Contains(details.AssetTypeId.Value))
-            throw new StaffException("Cannot copy this assetType: " + details.AssetTypeId);
-        if (string.IsNullOrWhiteSpace(details.Name))
-            throw new StaffException("Name cannot be null or empty");
-        if (details.IsLimited == null || details.IsLimitedUnique == null)
-            throw new StaffException("Product details were invalid for this item. Try again");
-        
-        if (!request.force)
-        {
-            // Check if duplicate?
-            var alreadyExists = await services.assets.SearchCatalog(new CatalogSearchRequest()
-            {
-                limit = 10,
-                include18Plus = true,
-                includeNotForSale = true,
-                creatorType = CreatorType.User,
-                creatorTargetId = 1,
-                keyword = details.Name,
-            });
-            if (alreadyExists._total != 0 && alreadyExists.data != null)
-                foreach (var item in alreadyExists.data)
-                {
-                    var info = await services.assets.GetAssetCatalogInfo(item.id);
-                    if (info.assetType == details.AssetTypeId)
-                        throw new StaffException("It looks like this item already exists: AssetID=" + info.id +
-                                                 "\nIf this is incorrect, click the 'force' button to upload this item anyway.");
-                }
-        }
-        var content = await services.robloxApi.GetAssetContent(request.assetId);
-        var isOk = await services.assets.ValidateAssetFile(content, details.AssetTypeId.Value);
-        if (!isOk)
-            throw new StaffException("The asset file doesn't look correct. Please try again.");
-        content.Position = 0;
-        // Now make the item!
-        var assetDetails = await services.assets.CreateAsset(details.Name, details.Description, 1,
-            CreatorType.User, 1, content, details.AssetTypeId.Value, Genre.All, ModerationStatus.ReviewApproved,
-            DateTime.UtcNow, DateTime.UtcNow, request.assetId);
-        await db.ExecuteAsync("INSERT INTO moderation_migrate_asset(asset_id, roblox_asset_id, actor_id) VALUES (@assetId, @robloxAssetId, @actorId)",
-            new
-            {
-                assetId = assetDetails.assetId,
-                robloxAssetId = request.assetId,
-                actorId = safeUserSession.userId,
-            });
-        
-        return new
-        {
-            assetId = assetDetails.assetId,
-        };
-    }
 
     [HttpPost("asset/create"), StaffFilter(Access.CreateAsset)]
     public async Task<dynamic> CreateAsset([Required, FromForm] CreateAssetRequest request)
@@ -2369,7 +2252,6 @@ Thank you for your understanding,
     [HttpGet("text-moderation/get-latest"), StaffFilter(Access.GetAllAssetComments)]
     public async Task<dynamic> GetLatestIdsForTextMod()
     {
-        var forumPosts = await services.forums.GetAllPosts(0, 1, "desc", null);
         var comments = await GetAllAssetComments(1, 0, "desc");
         var wall = await GetAllWallPosts(1, 0, "desc");
         var status = await GetAllUserStatuses(0, 1, "desc");
@@ -2377,7 +2259,6 @@ Thank you for your understanding,
 
         return new
         {
-            ForumPost = forumPosts.Last().postId,
             AssetComment = comments.Last().id,
             GroupWallPost = wall.Last().id,
             UserStatusPost = status.Last().id,
@@ -2644,20 +2525,18 @@ Thank you for your understanding,
             clock = DateTime.UtcNow,
         }));
         
-        var forumPosts = await services.forums.GetAllPosts(0, 100, "desc", null);
         var comments = await GetAllAssetComments(100, 0, "desc");
         var wall = await GetAllWallPosts(100, 0, "desc");
         var status = await GetAllUserStatuses(0, 100, "desc");
         var groupStatus = await GetGroupStatuses(0, 100, "desc");
 
-        var validForumPosts = forumPosts.Count(c => c.createdAt > lastClock);
         var validComments = comments.Count(c => c.createdAt > lastClock);
         var validWall = wall.Count(c => c.createdAt > lastClock);
         var validStatus = status.Count(c => c.createdAt > lastClock);
         var validGroupStatus = groupStatus.Count(c => c.created_at > lastClock);
         const int robuxMultiplier = 5;
 
-        var robuxAmount = (validComments + validForumPosts + validWall + validStatus + validGroupStatus);
+        var robuxAmount = (validComments + validWall + validStatus + validGroupStatus);
         if (robuxAmount == 0)
             return new
             {

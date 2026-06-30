@@ -28,7 +28,8 @@ public class UsersControllerV1 : ControllerBase
     [HttpGet("users/{userId:long}")]
     public async Task<dynamic> GetUserById(long userId)
     {
-        var postCount = await services.forums.GetPostCount(userId);
+        // Forums were removed; retain the field as 0 for response-shape compatibility.
+        var postCount = 0;
         var info = await services.users.GetUserById(userId);
         var isBanned =
             info.accountStatus != AccountStatus.Ok && 

@@ -1,29 +1,17 @@
 <script lang="ts">
     import Main from "../components/templates/Main.svelte";
-    import client from "../lib/request";
     import request from "../lib/request";
     import dayjs from "dayjs";
     import Loader from "../components/misc/Loader.svelte";
-    import type { AssetCommentType, ForumPostType, GroupStatus, GroupWallPost, TextPost, UserStatus } from "../lib/posts";
+    import type { AssetCommentType, GroupStatus, GroupWallPost, TextPost, UserStatus } from "../lib/posts";
     import TextPostEntryDesktop from "../components/TextPostEntryDesktop.svelte";
     import TextPostMobile from "../components/TextPostMobile.svelte";
 
     let feedback :string|null = null;
 
-    let stats: Record<string, number|null> = {
-        pastMinute: null,
-        past5Minutes: null,
-        past30Minutes: null,
-        pastHour: null,
-        pastDay: null,
-    };
-
     let postsLoading = true;
     let posts: TextPost[] = [];
 
-    const getForumPosts = (): ForumPostType[] => {
-        return posts.filter(v => v.type === 'ForumPost') as ForumPostType[];
-    }
     const getComments = () => {
         return posts.filter(v => v.type === 'AssetComment') as AssetCommentType[];
     }
@@ -63,9 +51,6 @@
     }
 
     const clockLatest = () => {
-                if (getForumPosts().length)
-                    clock.ForumPost = getForumPosts()[getForumPosts().length - 1].postId;
-
                 if (getComments().length)
                     clock.AssetComment = getComments()[getComments().length - 1].id;
 
@@ -95,22 +80,6 @@
         disabled = true;
         posts = [];
         Promise.all([
-            client.request({
-                method: 'GET',
-                url: `/apisite/forums/v1/posts/list?limit=${limit}&offset=${offset}&sortOrder=asc&exclusiveStartId=${clock['ForumPost'] || ''}`,
-                baseURL: '/',
-            }).then(data => {
-                let min = clock['ForumPost'] || 0;
-                for (const item of data.data as ForumPostType[]) {
-                    if (posts.length >= 100) {
-                        break;
-                    }
-                    item.type = 'ForumPost';
-                    posts.push(item);
-                }
-                // remove below minimum
-                posts = posts.filter(v => v.type ==='ForumPost' ? v.postId > min : true);
-            }),
             request.get(`/assets/comments?limit=${limit}&offset=${offset}&sortOrder=asc&exclusiveStartId=${clock['AssetComment'] || ''}`).then(d => {
                 let min = clock['AssetComment'] || 0;
                 for (const item of d.data as AssetCommentType[]) {
@@ -161,16 +130,6 @@
         })
     }
     loadContent();
-
-    $: {
-        client.request({
-            method: 'GET',
-            baseURL: '/',
-            url: `/apisite/forums/v1/stats`,
-        }).then(data => {
-            stats = data.data;
-        })
-    }
 </script>
 
 <svelte:head>

@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^6.0.9",
+    "@tanstack/react-query": "^5.101.2",
     "axios": "^1.8.4",
     "bootstrap": "^5.1.0",
     "dayjs": "^1.10.6",
@@ -49,6 +50,10 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/register": "^7.16.9",
     "@types/jest": "^27.4.0",
+    "@types/node": "^26.0.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^10.5.2",
     "babel": "^6.23.0",
     "babel-jest": "^27.4.6",
     "babel-polyfill": "^6.26.0",
@@ -59,6 +64,9 @@
     "eslint-config-next": "14.2.35",
     "expose-loader": "^3.0.0",
     "jest": "^27.4.7",
-    "regenerator-runtime": "^0.13.9"
+    "postcss": "^8.5.16",
+    "regenerator-runtime": "^0.13.9",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3"
   }
 }

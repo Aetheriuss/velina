@@ -35,7 +35,6 @@ public class FrontendProxyMiddleware
         // Razor - Internal
         "/internal/year",
         "/internal/updates",
-        "/internal/clothingstealer",
         "/internal/age",
         "/internal/report-abuse",
         "/internal/membership",
@@ -199,9 +198,6 @@ public class FrontendProxyMiddleware
         var cacheable = contentType != null && result.IsSuccessStatusCode && (
                 contentType.Contains("application/javascript") ||
                 contentType.Contains("text/html"));
-        if (requestUrl.ToLower().StartsWith("/forum/"))
-            cacheable = false;
-
         if (cacheable)
         {
             pageCacheMux.WaitOne();

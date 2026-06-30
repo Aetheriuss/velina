@@ -137,7 +137,6 @@ public class CsrfMiddleware : ControllerServicesExtended
         "/auth/application",
         "/auth/application-check",
         "/internal/year",
-        "/internal/clothingstealer",
         "/internal/report-abuse",
         "/internal/age",
         "/internal/membership",

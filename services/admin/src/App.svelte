@@ -22,7 +22,6 @@
 	import AssetReRender from "./pages/AssetReRender.svelte";
 	import UpdateAssetProduct from "./pages/UpdateAssetProduct.svelte";
 	import CreateClothing from "./pages/CreateClothing.svelte";
-	import CopyRobloxClothing from "./pages/CopyRobloxClothing.svelte";
 	import AssetApproval from "./pages/AssetApproval.svelte";
 	import ManageUsernames from "./pages/ManageUsernames.svelte";
 	import * as rank from "./stores/rank";
@@ -34,7 +33,6 @@ import Applications from "./pages/Applications.svelte";
 import ForumPosts from "./pages/TextModeration.svelte";
 import Groups from "./pages/Groups.svelte";
 import GameHistory from "./pages/GameHistory.svelte";
-import Forums from "./pages/Forums.svelte";
 import ManageUserTrades from "./pages/ManageUserTrades.svelte";
 import TrackUserAsset from "./pages/TrackUserAsset.svelte";
 import AbuseReports from "./pages/AbuseReports.svelte";
@@ -127,9 +125,6 @@ import ForceApplication from "./pages/ForceApplication.svelte";
 		<Route path="/admin/asset/create/clothing">
 			<CreateClothing />
 		</Route>
-		<Route path="/admin/asset/copy">
-			<CopyRobloxClothing />
-		</Route>
 		<Route path="/admin/asset/approval">
 			<AssetApproval />
 		</Route>
@@ -153,9 +148,6 @@ import ForceApplication from "./pages/ForceApplication.svelte";
 		</Route>
 		<Route path="/admin/game-history">
 			<GameHistory />
-		</Route>
-		<Route path="/admin/forums">
-			<Forums />
 		</Route>
 		<Route path="/admin/asset/track">
 			<TrackUserAsset />
