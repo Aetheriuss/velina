@@ -28,7 +28,20 @@ public class FrontendProxyMiddleware
         "/api/economy-chat/",
         // Razor Files
         "/feeds/getuserfeed",
-        "/auth/",
+        // Auth: the /auth/ catch-all was split in Phase 3. Only the endpoints that must stay on .NET
+        // remain bypassed (Discord OAuth redirects, the bot-gate captcha, the staff break-glass login,
+        // the support ticket form, and the ban page). Everything else under /auth/* (login CTA, signup,
+        // home, tos, privacy, credits, password-reset, choose-username, account-deletion) now proxies
+        // to the Next App Router. The interactive flows POST to JSON endpoints under /apisite/ instead.
+        "/auth/discord/login",
+        "/auth/discord/callback",
+        "/auth/captcha",
+        "/auth/break-glass",
+        "/auth/ticket",
+        // Pure server-side 302 redirects to Discord (no UI to re-skin); kept on .NET so they emit a
+        // clean Location header rather than Next's JS-driven static redirect behind the caching proxy.
+        "/auth/signup",
+        "/auth/password-reset",
         "/membership/notapproved.aspx",
         // Razor Public
         "/unsecuredcontent/",

@@ -3,6 +3,7 @@
 import React, { createContext, useContext } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/apiClient';
+import { useRouter } from 'next/navigation';
 
 /**
  * Auth state for the App Router tree. Replaces the unstated-next
@@ -30,6 +31,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isPending: boolean;
   refresh: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -45,6 +47,7 @@ const fetchAuthenticated = async (): Promise<AuthenticatedUser | null> => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { data, isLoading } = useQuery({
     queryKey: AUTH_QUERY_KEY,
     queryFn: fetchAuthenticated,
@@ -62,6 +65,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isPending: isLoading,
     refresh: async () => {
       await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+    },
+    logout: async () => {
+      // Server clears the .ROBLOSECURITY cookie + session; swallow errors (e.g. already logged out).
+      try {
+        await apiRequest('POST', 'auth', '/v2/logout');
+      } catch {
+        /* ignore */
+      }
+      await queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEY });
+      router.push('/');
     },
   };
 

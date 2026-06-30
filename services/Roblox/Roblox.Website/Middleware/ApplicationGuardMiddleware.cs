@@ -29,6 +29,11 @@ public class ApplicationGuardMiddleware
         "/auth/privacy",
         "/auth/tos",
         "/auth/login",
+        // Phase 3: break-glass login relocated from /auth/login; credits + choose-username pages moved
+        // to Next and need explicit unauthenticated allow when AllowAccessToAllRequests is in lockdown.
+        "/auth/break-glass",
+        "/auth/credits",
+        "/auth/choose-username",
         "/auth/password-reset",
         "/auth/account-deletion",
         "/auth/signup",

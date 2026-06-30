@@ -12,7 +12,7 @@ import Button from '../ui/Button';
  * out (search, robux balance, notifications, avatar menu) in Phase 2+.
  */
 export const Navbar: React.FC = () => {
-  const { isAuthenticated, isPending, username } = useAuth();
+  const { isAuthenticated, isPending, username, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -43,7 +43,16 @@ export const Navbar: React.FC = () => {
           </button>
 
           {isPending ? null : isAuthenticated ? (
-            <span className="text-sm text-white/90">{username}</span>
+            <>
+              <span className="text-sm text-white/90">{username}</span>
+              <button
+                type="button"
+                onClick={() => logout()}
+                className="rounded-rbx px-2 py-1 text-sm text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                Log out
+              </button>
+            </>
           ) : (
             <Link href="/auth/login">
               <Button size="sm">Login</Button>

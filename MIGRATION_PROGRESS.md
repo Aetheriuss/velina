@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phases 3–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (6 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phases 4–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (16 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -18,6 +18,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `13a6231` | Phase R complete: dead code, enums, DB drop migrations |
 | `d2726c9` | Phase 1: runtime config → env vars |
 | `c18b974` | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
+| _(pending)_ | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
 
 ---
 
@@ -116,11 +117,34 @@ All five named routes converted to App Router and re-skinned to 2020 tokens. Per
 
 ---
 
+## ✅ Phase 3 — Auth migration (complete & verified)
+
+**Reality vs. the original plan:** the site is **Discord-only** — the JSON `/apisite/auth/v2/{login,signup}` endpoints are deliberately disabled, and there's no password signup. So "JSON login/signup" was moot. The real interactive surface is the Discord OAuth flow + choose-username + account-deletion. User chose **full migration**.
+
+**Pages cut over to Next (`app/auth/*`, re-skinned 2020):** `login` (Discord CTA — not a password form), `home` (landing), `tos`, `privacy`, `credits`, `discord` (info), `choose-username` (interactive), `account-deletion` (interactive). Shared `_components/{AuthCard,DiscordButton}`.
+
+**New .NET JSON endpoints** (`Controllers/v2/AuthFlows.cs`, under the already-bypassed `/apisite/`, faithful ports of the Razor `OnPost` logic incl. validation, race-check, rate-limit, password-gen, and the shared `SessionCookie` `.ROBLOSECURITY` creation):
+- `GET  /apisite/auth/v2/discord/pending` — reads HttpOnly `es_discord_pending`, returns `suggestedUsername` (401 if expired).
+- `POST /apisite/auth/v2/discord/choose-username` — creates the Discord-linked account + session.
+- `POST /apisite/auth/v2/account-deletion` — verify username+password, per-IP daily rate limit, delete + reset avatar.
+- CSRF: not bypassed → standard `rbxcsrf4` challenge-retry, which `lib/apiClient` handles automatically.
+
+**Stayed on .NET (bypassed, unchanged):** Discord OAuth (`/auth/discord/login`, `/auth/discord/callback`), the bot-gate `/auth/captcha`, the ban page `/auth/notapproved`, the `/auth/ticket` stub, and the **owner/staff break-glass password login** — **relocated `/auth/login` → `/auth/break-glass`** (one-line `@page` change) so the user-facing `/auth/login` could become the Next Discord CTA without losing the only non-Discord way into the owner account. `/auth/signup` + `/auth/password-reset` kept on .NET too (pure server-side 302→Discord; no UI — Next's static `redirect()` is JS-driven and fragile behind the caching proxy).
+
+**Cutover (`BypassUrls`):** dropped the `/auth/` catch-all; added granular bypasses for the 7 routes above. Everything else under `/auth/*` now proxies to Next. **Allowlist fixes:** `ApplicationGuardMiddleware.allowedUrls` was missing `/auth/credits` + `/auth/choose-username` (would 302→`/auth/home` in lockdown mode) — added, plus `/auth/break-glass`. `CsrfMiddleware` bypass gained `/auth/break-glass`.
+
+**Logout/login wiring:** `AuthProvider` gained `logout()` (POST `/v2/logout` + invalidate auth query + → `/`); Navbar shows a "Log out" control; choose-username invalidates `AUTH_QUERY_KEY` on success then → `/home`.
+
+**Verified:** `.NET` + Next builds green; jest green; prod-server SSR smoke — all 8 `app/auth/*` pages 200 with correct ported content (Discord CTA, TOS, credits, landing). **Needs live-stack verification** (not runnable here without DB/Redis/Discord creds): end-to-end Discord signup → choose-username → session; break-glass login at the new `/auth/break-glass` URL; account-deletion happy/rate-limited paths.
+
+⚠️ **Operator note:** the staff/owner break-glass password login moved from `/auth/login` to **`/auth/break-glass`**.
+
+---
+
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **3 — Auth migration** | Split the `"/auth/"` BypassUrls catch-all into granular prefixes; add JSON Discord `choose-username` + JSON login/signup; build `app/auth/*` (login, signup, discord, captcha, TOS/privacy/credits, password-reset, account-deletion) with `credentials:'include'` POSTs; invalidate the auth query on login. **Highest risk.** | L |
 | **4 — Core SPA routes** | Convert catalog, games, users/*, My/*, Trade, Groups, search, messages, places/update; migrate stores → React Query; replace JSS per route. (`/home` + `/develop` already done in Phase 2.) | XL |
 | **5 — Internal forms** | Migrate surviving `/internal/*` (create-place, place-update, report-abuse, membership, collectibles, age, updates) to `app/internal/*`. | M |
 | **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |

@@ -142,6 +142,8 @@ public class CsrfMiddleware : ControllerServicesExtended
         "/internal/contest/first-contest",
         "/auth/account-deletion",
         "/auth/login",
+        // Staff break-glass login (relocated from /auth/login in Phase 3); uses RequestVerificationToken.
+        "/auth/break-glass",
         "/auth/password-reset",
         "/auth/ticket",
         "/auth/captcha",
