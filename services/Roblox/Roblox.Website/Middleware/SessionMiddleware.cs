@@ -128,18 +128,8 @@ public class SessionMiddleware
                             return;
                         }
                     }
-                    // Check if user filled out new app
-                    var appStatus = await users.IsUserApproved(userInfo.userId);
-                    if (!appStatus && !userInfo.isAdmin && !userInfo.isModerator && !StaffFilter.IsOwner(userInfo.userId))
-                    {
-                        if (!currentPath.StartsWith("/auth/"))
-                        {
-                            authTimer.Stop();
-                            ctx.Response.StatusCode = 302;
-                            ctx.Response.Headers.Add("location", "/auth/application");
-                            return;
-                        }
-                    }
+                    // Registration is Discord-only and open: accounts no longer require an
+                    // approved application, so the legacy approval gate has been removed.
 
                     // robux increment
                     if (!currentPath.StartsWith("/thumbs/") && !currentPath.StartsWith("/images/"))

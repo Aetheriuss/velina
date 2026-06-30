@@ -31,10 +31,8 @@ public class ApplicationGuardMiddleware
         "/auth/login",
         "/auth/password-reset",
         "/auth/account-deletion",
-        "/auth/application",
         "/auth/signup",
         "/auth/ticket",
-        "/auth/application-check",
         // razor public
         "/UnsecuredContent",
         // gs

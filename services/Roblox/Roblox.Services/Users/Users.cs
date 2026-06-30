@@ -898,23 +898,6 @@ public class UsersService : ServiceBase, IService
         return acceptId;
     }
 
-    public ApplicationRedemptionFailureReason CanRedeemApplication(UserApplicationEntry? app)
-    {
-        if (app == null)
-            return ApplicationRedemptionFailureReason.DoesNotExist;
-        if (app.createdAt <= DateTime.UtcNow.Subtract(TimeSpan.FromDays(30))) 
-            return ApplicationRedemptionFailureReason.Expired;
-        if (app.userId is not null)
-            return ApplicationRedemptionFailureReason.AlreadyAssociatedWithUser;
-
-        return ApplicationRedemptionFailureReason.Ok;
-    }
-
-    public async Task<ApplicationRedemptionFailureReason> CanRedeemApplication(string applicationId)
-    {
-        var app = await GetApplicationByJoinId(applicationId);
-        return CanRedeemApplication(app);
-    }
 
     public async Task<bool> IsDuplicateSocialId(string id)
     {
