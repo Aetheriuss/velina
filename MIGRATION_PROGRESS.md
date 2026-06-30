@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phases 2–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (31 pages incl. App Router `/ui-preview`) · jest green
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phases 3–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (6 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -17,6 +17,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `61e53a2` | Phase R: remove account-application, invite, social-verification, Twitter (UI + flow) |
 | `13a6231` | Phase R complete: dead code, enums, DB drop migrations |
 | `d2726c9` | Phase 1: runtime config → env vars |
+| _(pending)_ | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
 
 ---
 
@@ -39,7 +40,7 @@ App Router tree added **alongside** the legacy `pages/` tree (both build togethe
 
 New deps: `@tanstack/react-query`, `tailwindcss@^3`, `postcss`, `autoprefixer`, `typescript`, `@types/*`.
 
-**Deferred to Phase 2/3:** mounting `<Chat/>` (SignalR) into the shell (auth-dependent).
+**Deferred to Phase 2/3:** mounting `<Chat/>` (SignalR) into the shell (auth-dependent). → **done in Phase 2.**
 
 ---
 
@@ -93,13 +94,34 @@ Enums retired (Staff `Access` + `FeatureFlag`): `ForceApplication`, `ManageAppli
 
 ---
 
+## ✅ Phase 2 — Routes + re-skin + Chat (complete & verified)
+
+All five named routes converted to App Router and re-skinned to 2020 tokens. Per user direction, the two heavy pages (`/home`, `/develop`) got a **full re-skin now** (not deferred to Phase 4): their data layers were migrated to **React Query** (reusing the existing isomorphic `services/*` functions) and their JSS/Bootstrap replaced with Tailwind.
+
+| Route | New file(s) | Notes |
+|-------|-------------|-------|
+| `/404` | `app/not-found.tsx` | App Router global 404 (2020). Legacy `pages/404.js` **kept** — still imported by `components/userProfile` for banned users + serves the Pages-Router tree until Phase 7. |
+| `/` | `app/page.tsx` | Client: authed → `router.replace('/home')`; logged-out → 2020 landing hero + Sign In CTA (`/login`). |
+| `/download` | `app/download/page.tsx` | Flag-driven (`downloadPageEnabled`, `downloadGameClients`); cards re-skinned. |
+| `/home` | `app/home/page.tsx` + `_components/{FriendsStrip,GameRows,Feed}.tsx` | Greeting+headshot, friends (presence + headshots), HomeSorts game rows (icons batched), feed iframe (behind `userFeedEnabled`). Legacy `Theme2016` wrapper dropped (theming is token-driven). |
+| `/develop` | `app/develop/page.tsx` + `_constants.ts` + `_components/{Games,Clothing,Ads}SubPage.tsx` | My/Group tabs, group selector (filtered to `manageGroupGames`), asset-type nav via `?View=`; games/clothing(upload)/ads(bid) sub-pages. |
+
+**Chat / SignalR:** `components/appShell/ChatMount.tsx` bridges the legacy `<Chat/>` into `app/providers.tsx` — `next/dynamic` `ssr:false` (it imports `@microsoft/signalr` + touches `window`), wrapped in the legacy `AuthenticationStore.Provider` (self-fetching), and gated on `useAuth().isAuthenticated` (legacy `_app` mounted it unconditionally → 401 spam while logged out). SignalR realtime stays behind the `useSignalCoreForRealTimeChat` flag (default off → polling); live hub verification needs the running .NET `/chat` hub.
+
+**Supporting changes:** `lib/thumbnailMap.ts` (targetId→imageUrl helper for the batch thumbnail endpoints); `tailwind.config.ts` content glob fixed to include `components/appShell/**` (latent Phase 0 gap — Navbar/Footer token classes weren't being scanned).
+
+**Verified:** `next build` green (6 App Router routes + legacy pages, no app/pages route conflicts); jest green; prod server (`next start`) SSR smoke test — `/ /home /develop /download` → 200, unknown path → 404 (`app/not-found`), `/download` "unavailable" + 404 "Page not found" render server-side, **no SSR 500s or errors in the server log**. (Data-bound rendering needs the backend; auth-gated pages render null on the server and resolve client-side.)
+
+**Not cut over yet:** these routes are reachable in Next, but `.NET` still proxies `/`, `/home`, `/develop`, `/download` to Next already (none were in `BypassUrls`), so they serve the new App Router versions immediately on deploy. Legacy `pages/{index,home,develop,download}.js` removed.
+
+---
+
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **2 — Low-risk routes + theming proof** | Convert `/404`, `/download`, `/develop`, `/`, `/home` to App Router, re-skinned; mount `<Chat/>`, verify SignalR. | M |
 | **3 — Auth migration** | Split the `"/auth/"` BypassUrls catch-all into granular prefixes; add JSON Discord `choose-username` + JSON login/signup; build `app/auth/*` (login, signup, discord, captcha, TOS/privacy/credits, password-reset, account-deletion) with `credentials:'include'` POSTs; invalidate the auth query on login. **Highest risk.** | L |
-| **4 — Core SPA routes** | Convert catalog, games, users/*, My/*, Trade, Groups, search, messages, places/update; migrate stores → React Query; replace JSS per route. | XL |
+| **4 — Core SPA routes** | Convert catalog, games, users/*, My/*, Trade, Groups, search, messages, places/update; migrate stores → React Query; replace JSS per route. (`/home` + `/develop` already done in Phase 2.) | XL |
 | **5 — Internal forms** | Migrate surviving `/internal/*` (create-place, place-update, report-abuse, membership, collectibles, age, updates) to `app/internal/*`. | M |
 | **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |
 | **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |

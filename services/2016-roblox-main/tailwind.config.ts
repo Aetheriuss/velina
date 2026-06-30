@@ -12,6 +12,7 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx}',
     './components/ui/**/*.{js,ts,jsx,tsx}',
     './components/providers/**/*.{js,ts,jsx,tsx}',
+    './components/appShell/**/*.{js,ts,jsx,tsx}',
   ],
   // Preflight (the base reset) is disabled so adding Tailwind cannot disturb the
   // legacy Bootstrap-styled pages during the overlap. The app/ tree gets its own
