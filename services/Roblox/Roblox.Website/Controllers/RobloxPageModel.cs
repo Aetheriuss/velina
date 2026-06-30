@@ -20,6 +20,8 @@ public class RobloxPageModel : PageModel
     }
 
     public bool isAuthenticated => userSession != null;
+    // hCaptcha is disabled globally via "HCaptcha:Enabled": false. Views gate the widget on this.
+    public bool captchaEnabled => Roblox.Configuration.CaptchaEnabled;
     protected string rawIpAddress => Roblox.Website.Controllers.ControllerBase.GetRequesterIpRaw(HttpContext);
     protected string hashedIp => Roblox.Website.Controllers.ControllerBase.GetIP(rawIpAddress);
 

@@ -21,7 +21,9 @@ public class Captcha : RobloxPageModel
 
     public async Task<IActionResult> OnPost()
     {
-        if (string.IsNullOrEmpty(hCaptchaResponse))
+        // When captcha is disabled globally, don't require a token here — otherwise blocked user-agents
+        // would be trapped on this gate page with no way to obtain one. IsValid below returns true.
+        if (Roblox.Configuration.CaptchaEnabled && string.IsNullOrEmpty(hCaptchaResponse))
         {
             HttpContext.Response.StatusCode = 401;
             return Page();

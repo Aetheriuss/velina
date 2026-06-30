@@ -138,13 +138,16 @@
                             <div class="input-padding"></div>
                             
                             
-                            <div class="stage-4">
-                                <h4>Step 4 - Captcha</h4>
-                                <div class="p-2">
-                                    <p class="mb-0">We just have to make sure you aren't a robot.</p>
-                                    <div class="h-captcha mt-4" data-sitekey="@Model.siteKey" data-theme="light"></div>
+                            @if (Model.captchaEnabled)
+                            {
+                                <div class="stage-4">
+                                    <h4>Step 4 - Captcha</h4>
+                                    <div class="p-2">
+                                        <p class="mb-0">We just have to make sure you aren't a robot.</p>
+                                        <div class="h-captcha mt-4" data-sitekey="@Model.siteKey" data-theme="light"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            }
                         </div>
                         
                         <div class="stage-submit">
@@ -160,4 +163,7 @@
     </div>
 </div>
 
-<script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+@if (Model.captchaEnabled)
+{
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+}

@@ -40,7 +40,6 @@ public class Login : RobloxPageModel
     public string? applicationId { get; set; }
     public string? errorMessage { get; set; }
     public string siteKey => Configuration.HCaptchaPublicKey;
-    public bool captchaEnabled => Configuration.CaptchaEnabled;
     public void OnGet()
     {
         try
