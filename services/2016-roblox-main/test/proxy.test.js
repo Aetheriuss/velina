@@ -1,8 +1,17 @@
 import { expect } from "chai";
-jest.mock('next/config', () => () => ({
-  publicRuntimeConfig: {
-    backend: {
-      baseUrl: 'https://www.roblox.com',
+// Config now flows through lib/config (env-backed) rather than next/config, and both
+// pages/api/proxy.js and its dep lib/request.js read getBaseUrl() from it.
+jest.mock('../lib/config', () => ({
+  __esModule: true,
+  default: {
+    serverRuntimeConfig: { backend: {} },
+    publicRuntimeConfig: {
+      backend: {
+        baseUrl: 'https://www.roblox.com',
+        apiFormat: 'https://www.roblox.com/apisite/{0}{1}',
+        proxyEnabled: true,
+        flags: {},
+      }
     }
   }
 }));

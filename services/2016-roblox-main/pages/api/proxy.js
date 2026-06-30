@@ -1,5 +1,5 @@
 import axios from 'axios';
-import getConfig from 'next/config';
+import appConfig from '../../lib/config';
 import { getBaseUrl } from '../../lib/request';
 
 // The proxy may ONLY forward to the exact configured origin (protocol + host:port).
@@ -38,7 +38,7 @@ const actualHandler = async (req, res) => {
   // A safer approach might be to just send the parts of the URL (query params, path, api site) to this handler, then construct the correct URL here.
   const isUrlSafe = UrlUtilities.isSafe(fullUrl);// typeof fullUrl === 'string' && fullUrl.toLowerCase().startsWith(getBaseUrl())
 
-  if (getConfig().publicRuntimeConfig.backend.proxyEnabled !== true || !isUrlSafe) {
+  if (appConfig.publicRuntimeConfig.backend.proxyEnabled !== true || !isUrlSafe) {
     return res.status(500).json({
       success: false,
     });
@@ -59,9 +59,9 @@ const actualHandler = async (req, res) => {
     }
     // The internal authorization secret is added AFTER the destination is validated to be our own
     // origin (isSafe above), so it can never be forwarded to a user-controlled host.
-    const authHeaderValue = getConfig().serverRuntimeConfig.backend.authorization;
+    const authHeaderValue = appConfig.serverRuntimeConfig.backend.authorization;
     if (typeof authHeaderValue === 'string')
-      requestHeaders[getConfig().serverRuntimeConfig.backend.authorizationHeader || 'authorization'] = authHeaderValue;
+      requestHeaders[appConfig.serverRuntimeConfig.backend.authorizationHeader || 'authorization'] = authHeaderValue;
     const result = await axios.request({
       method: req.method,
       url: fullUrl,

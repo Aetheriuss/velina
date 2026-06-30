@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phases 1–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (30 pages)
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phases 2–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (31 pages incl. App Router `/ui-preview`) · jest green
 
 ---
 
@@ -16,6 +16,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `e2d54dd` | Phase 0 scaffold + remove forums & clothing-stealer |
 | `61e53a2` | Phase R: remove account-application, invite, social-verification, Twitter (UI + flow) |
 | `13a6231` | Phase R complete: dead code, enums, DB drop migrations |
+| _(pending)_ | Phase 1: runtime config → env vars |
 
 ---
 
@@ -71,11 +72,31 @@ Enums retired (Staff `Access` + `FeatureFlag`): `ForceApplication`, `ManageAppli
 
 ---
 
+## ✅ Phase 1 — Config → env (complete & verified)
+
+`next/config`'s `serverRuntimeConfig`/`publicRuntimeConfig` only resolve in the Pages Router (`getConfig()` returns null under App Router), so the App Router tree (`lib/apiClient.ts` already reads `process.env.NEXT_PUBLIC_API_FORMAT`) could never see them. Runtime config now flows through **environment variables**, readable from both routers.
+
+**Design:** `config.json` stays the supported source. `next.config.js` reads it and maps it onto `process.env` *before* compilation — public values → `NEXT_PUBLIC_*` (inlined into the client bundle), secrets → server-only `BACKEND_*`. Real env vars win over `config.json` (`setIfUnset`), enabling env-only deploys. `lib/config.js` rebuilds the original `{serverRuntimeConfig, publicRuntimeConfig}` shape from env, so `lib/request.js`/`lib/getFlag.js` needed **no changes**.
+
+| File | Change |
+|------|--------|
+| `next.config.js` | Removed `serverRuntimeConfig`/`publicRuntimeConfig`; maps `config.json` → `process.env` (public + secret), env vars take precedence |
+| `lib/config.js` | Dropped `getConfig()`; builds config object from `process.env.NEXT_PUBLIC_*` / `BACKEND_*` |
+| `pages/api/proxy.js` | `getConfig()` → `lib/config` import (aliased `appConfig` to avoid the `export const config` collision) |
+| `pages/api/validate-and-add-cookie.js` | `getConfig()` → `lib/config` import |
+| `test/proxy.test.js` | Mocks `lib/config` instead of `next/config` |
+| `.env.local.example` (new) | Documents the env-var override path |
+
+**Env var mapping:** `baseUrl`→`NEXT_PUBLIC_BASE_URL`, `apiFormat`→`NEXT_PUBLIC_API_FORMAT`, `proxyEnabled`→`NEXT_PUBLIC_PROXY_ENABLED`, `flags`→`NEXT_PUBLIC_FLAGS` (JSON); `csrfKey`→`BACKEND_CSRF_KEY`, `authorization`→`BACKEND_AUTHORIZATION`, `authorizationHeader`→`BACKEND_AUTHORIZATION_HEADER`.
+
+**Verified:** `next build` clean (compiles, lints, types); jest green; `velina.lol` apiFormat **inlined** into client chunks (`app/layout`, `pages/_app`) — proving config now reaches the App Router; secrets confirmed **not** inlined (`BACKEND_CSRF_KEY` stays a runtime `process.env` lookup → `undefined` in browser, no value leaked). No `next/config` imports remain.
+
+---
+
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **1 — Config → env** | Replace `serverRuntimeConfig`/`publicRuntimeConfig` with env vars in `next.config.js`, `lib/config.js`, `lib/request.js`, `lib/getFlag.js`, `pages/api/proxy.js`. **Hard prerequisite** for App Router data pages. | S |
 | **2 — Low-risk routes + theming proof** | Convert `/404`, `/download`, `/develop`, `/`, `/home` to App Router, re-skinned; mount `<Chat/>`, verify SignalR. | M |
 | **3 — Auth migration** | Split the `"/auth/"` BypassUrls catch-all into granular prefixes; add JSON Discord `choose-username` + JSON login/signup; build `app/auth/*` (login, signup, discord, captcha, TOS/privacy/credits, password-reset, account-deletion) with `credentials:'include'` POSTs; invalidate the auth query on login. **Highest risk.** | L |
 | **4 — Core SPA routes** | Convert catalog, games, users/*, My/*, Trade, Groups, search, messages, places/update; migrate stores → React Query; replace JSS per route. | XL |
