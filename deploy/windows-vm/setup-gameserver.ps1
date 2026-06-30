@@ -42,7 +42,8 @@ param(
   [int]$Port = 3040,                 # game-server HTTP
   [int]$ThumbnailWebsocketPort = 3189, # backend connects here (Render:BaseUrl = ws://<vm-ip>:3189)
   [int]$RccPort = 64989,             # RCCService SOAP port
-  [switch]$Start
+  [switch]$Start,
+  [switch]$Force                     # overwrite an existing config.json (default: keep it)
 )
 $ErrorActionPreference = "Stop"
 
@@ -63,6 +64,12 @@ Write-Host "Node version: $nodeV"
 if ($nodeV -notmatch "^v2[2-9]\.") { Write-Warning "Node $nodeV detected; Node 22 LTS is recommended (Phase 6)." }
 
 # 2) Write config.json (plan section 1/section 6 field meanings).
+#    Preserve an existing config by default so a plain `-Start` re-run does not wipe hand-edited
+#    values. Pass -Force to regenerate it from the parameters above.
+$configPath = Join-Path $gs "config.json"
+if ((Test-Path $configPath) -and -not $Force) {
+  Write-Host "Keeping existing $configPath (pass -Force to regenerate from parameters)"
+} else {
 $config = [ordered]@{
   authorization         = $RenderRccSecret              # == backend Render:Authorization / RccAuthorization
   websiteBotAuth        = $BotSecret                    # == backend BotAuthorization
@@ -70,15 +77,19 @@ $config = [ordered]@{
   port                  = $Port
   thumbnailWebsocketPort= $ThumbnailWebsocketPort
   rccPort               = $RccPort
-  rcc                   = $rcc                          # RCCService dir
+  rcc                   = ($rcc.TrimEnd('\') + '\')     # RCCService dir -- MUST end in '\': index.ts concatenates rcc+'RCCService.exe'
   content               = (Join-Path $rcc "content")    # RCC content dir
   dockerDisabled        = $true                         # native, no per-job docker sandbox (VM IS the sandbox, section 6)
 }
-$configPath = Join-Path $gs "config.json"
-($config | ConvertTo-Json -Depth 4) | Set-Content -Path $configPath -Encoding UTF8
+# Write BOM-free UTF-8. Set-Content -Encoding UTF8 on Windows PowerShell 5.1 prepends a BOM,
+# which makes Node's JSON.parse choke ("Unexpected token '﻿'"). WriteAllText with an
+# explicit UTF8Encoding($false) is BOM-free on both PS 5.1 and PS 7+.
+$json = $config | ConvertTo-Json -Depth 4
+[System.IO.File]::WriteAllText($configPath, $json, (New-Object System.Text.UTF8Encoding $false))
 Write-Host "Wrote $configPath"
 if ($RenderRccSecret -eq "CHANGE_ME" -or $BotSecret -eq "CHANGE_ME" -or $BackendUrl -match "CHANGE_ME") {
   Write-Warning "Placeholders remain in config.json -- re-run with -BackendUrl/-RenderRccSecret/-BotSecret, or edit it by hand."
+}
 }
 
 # 3) Install + build the game-server.

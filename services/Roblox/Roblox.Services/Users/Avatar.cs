@@ -550,11 +550,17 @@ public class AvatarService : ServiceBase, IService
         // Get our image urls
         var thumbnailUrl = $"/images/thumbnails/{avatarHash}_thumbnail.png";
         var headshotUrl = $"/images/thumbnails/{avatarHash}_headshot.png";
+        // Filesystem paths the PNGs are written to. These MUST be under ThumbnailsDirectory -- that is
+        // where the /images/thumbnails static route serves from (Program.cs) and where every other
+        // thumbnail (asset/game icons in AssetsService) is written. Previously these used
+        // PublicDirectory, which the serve route does not map to, so avatar images 404'd.
+        var thumbnailFile = Configuration.ThumbnailsDirectory + $"{avatarHash}_thumbnail.png";
+        var headshotFile = Configuration.ThumbnailsDirectory + $"{avatarHash}_headshot.png";
         if (!forceRedraw)
         {
             // Check if the hash exists already - If they do, we can skip rendering!
-            if (File.Exists(Configuration.PublicDirectory + thumbnailUrl) &&
-                File.Exists(Configuration.PublicDirectory + headshotUrl))
+            if (File.Exists(thumbnailFile) &&
+                File.Exists(headshotFile))
             {
                 // Since both files exist, we can just update the URL and exit
                 await UpdateUserAvatarImages(userId, headshotUrl, thumbnailUrl);
@@ -601,13 +607,13 @@ public class AvatarService : ServiceBase, IService
         var headshotStream = result[0];
         var thumbnailStream = result[1];
         // Write the files
-        await using (var fileStream = File.Create(Configuration.PublicDirectory + headshotUrl))
+        await using (var fileStream = File.Create(headshotFile))
         {
             headshotStream.Seek(0, SeekOrigin.Begin);
             await headshotStream.CopyToAsync(fileStream);
         }
 
-        await using (var fileStream = File.Create(Configuration.PublicDirectory + thumbnailUrl))
+        await using (var fileStream = File.Create(thumbnailFile))
         {
             thumbnailStream.Seek(0, SeekOrigin.Begin);
             await thumbnailStream.CopyToAsync(fileStream);

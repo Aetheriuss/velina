@@ -1,0 +1,19 @@
+# cloudflared ingress (DEP-5). Copy to $VELINA_CONFIG_DIR/cloudflared/config.yml and place the
+# tunnel's credentials.json alongside it. Create the tunnel with:
+#   cloudflared tunnel login
+#   cloudflared tunnel create velina      # writes credentials.json + prints the UUID
+# Then point DNS at it:
+#   cloudflared tunnel route dns velina velina.lol
+#
+# WebSockets are carried automatically (needed for SignalR chat) — no extra flag required.
+
+tunnel: 18a0739b-9ac1-4fd5-a9b7-720a73c867db
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  - hostname: velina.lol
+    service: http://roblox-backend:5000
+  # Phase 4 (live games): only if game transport is WebSocket-over-HTTPS (see plan RISK-GAMEWS).
+  # - hostname: game.velina.lol
+  #   service: ws://REPLACE_WITH_WINDOWS_VM_IP:3189
+  - service: http_status:404

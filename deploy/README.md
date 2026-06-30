@@ -41,6 +41,12 @@ in a separate **Windows VM** (plan §6), not in this compose.
 4. **Data dir** `$VELINA_DATA_DIR` (`/data` in-container): create the subdirs your `Directories:*`
    point at, and populate static content (public assets, XML templates, JSON data, admin bundle,
    economy-chat bundle). These survive image rebuilds.
+   - **Required:** seed `Directories:JsonData` with `avatar-colors.json`, or every avatar
+     render/redraw 500s (`AvatarMetadata.GetColors()` reads `<JsonData>/avatar-colors.json`):
+     ```bash
+     mkdir -p "$VELINA_DATA_DIR/jsondata"
+     cp services/Roblox/Roblox.Libraries/Json/avatar-colors.json "$VELINA_DATA_DIR/jsondata/"
+     ```
 
 5. **Postgres role**: create a least-privilege, **non-superuser** `velina` role (finding H15).
 
