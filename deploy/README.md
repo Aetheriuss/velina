@@ -47,6 +47,14 @@ in a separate **Windows VM** (plan §6), not in this compose.
      mkdir -p "$VELINA_DATA_DIR/jsondata"
      cp services/Roblox/Roblox.Libraries/Json/avatar-colors.json "$VELINA_DATA_DIR/jsondata/"
      ```
+   - **Required:** seed `Directories:Public` with the repo's static `public/` assets, or anything
+     that reads `<Public>/...` 500s — e.g. admin **Create Game** / place creation reads
+     `<Public>/Baseplate.rbxl` (`AssetsService.CreatePlace`, `FileNotFoundException` otherwise), and
+     the `img/` + `UnsecuredContent` static-file routes (`Program.cs`) serve from here too:
+     ```bash
+     mkdir -p "$VELINA_DATA_DIR/public"
+     cp -r services/api/public/. "$VELINA_DATA_DIR/public/"
+     ```
 
 5. **Postgres role**: create a least-privilege, **non-superuser** `velina` role (finding H15).
 
