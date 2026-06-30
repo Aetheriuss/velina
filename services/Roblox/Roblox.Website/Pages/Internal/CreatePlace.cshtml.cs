@@ -199,13 +199,9 @@ public class CreatePlace : RobloxPageModel
         }
 
 
-        var app = await services.users.GetApplicationByUserId(userId);
-        if (app is not {status: UserApplicationStatus.Approved})
-        {
-            log.Info("user has no app or it is not approved {0}", app?.status.ToString());
-            return PlaceCreationFailureReason.NoApplication;
-        }
-        
+        // Registration is open (Discord-only); the legacy "must have an approved application"
+        // gate has been removed along with the application system.
+
         // lol
         // anti brandon/sleep/xlxi check
         if (userId < 200)

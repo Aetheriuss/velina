@@ -37,11 +37,9 @@ public enum FeatureFlag
     FollowingEnabled,
     // Sending friend reuqests, accepted friend requests, declining
     FriendingEnabled,
-    // Sending applications, signup up with application id
-    ApplicationsEnabled,
-    CreateInvitesEnabled,
-    InvitesEnabled,
-    AllowAccessToAllRequests,
+    // 30/31/32 retired: ApplicationsEnabled, CreateInvitesEnabled, InvitesEnabled
+    // (application + invite systems removed). Ordinals preserved so cached flag indices stay stable.
+    AllowAccessToAllRequests = 33,
     // 34/35 retired: ForumsEnabled, ForumPostingEnabled (forums removed).
     // Ordinal preserved so cached flag indices stay stable.
     CurrencyExchangeEnabled = 36,

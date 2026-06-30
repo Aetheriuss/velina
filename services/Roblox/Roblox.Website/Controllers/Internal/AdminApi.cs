@@ -271,43 +271,6 @@ public class AdminApiController : ControllerBase
         return await services.users.CreateUser(req.username, req.password, Gender.Unknown, req.userId);
     }
 
-    [HttpPost("force-application"), StaffFilter(Access.ForceApplication)]
-    public async Task<dynamic> ForceApplication([Required, FromBody] ForceApplicationReq req)
-    {
-        if (req.socialURL == null)
-            throw new StaffException("Bad Social URL");
-
-        // Check for invite/current application and delete them if they are found
-
-        var inviteId = services.users.GetUserInvite(req.userId);
-
-        // Delete Invite if the user has one        
-        
-        if (inviteId != null)
-            await services.users.DeleteUserInvite(req.userId);
-
-        // Create the application
-
-        var id = await services.users.CreateApplication(new CreateUserApplicationRequest()
-            {
-                about = "Forced Application",
-                socialPresence = req.socialURL,
-                isVerified = true,
-                verifiedUrl = req.socialURL,
-                verificationPhrase = "Forced Application",
-                verifiedId = "1",
-            });
-
-        // get the join id
-
-        var joinId = await services.users.ProcessApplication(id, 1, UserApplicationStatus.Approved);
-
-        // Finally, apply the application to the account.
-        await services.users.SetApplicationUserIdByJoinId(joinId, req.userId);
-
-        return "Join application added to user";
-    }
-
     [HttpGet("groups/pending-icons"), StaffFilter(Access.GetPendingGroupIcons)]
     public async Task<dynamic> GetPendingIcons()
     {
@@ -585,23 +548,6 @@ public class AdminApiController : ControllerBase
         });
     }
 
-    private async Task AwardCommissionForApplicationReview()
-    {
-        // give commission
-        await services.economy.IncrementCurrency(userSession.userId, CurrencyType.Robux, 25);
-        await services.users.InsertAsync("user_transaction", new
-        {
-            type = PurchaseType.Commission,
-            currency_type = CurrencyType.Robux,
-            amount = 25,
-            // details
-            sub_type = TransactionSubType.StaffApplicationReview,
-            // user data
-            user_id_one = userSession.userId,
-            user_id_two = 1,
-        });
-    }
-
     [HttpPost("groups/icon-toggle"), StaffFilter(Access.SetGroupIconModerationStatus)]
     public async Task ToggleIcon([Required, FromBody] IconToggleRequest request)
     {
@@ -696,7 +642,7 @@ public class AdminApiController : ControllerBase
 
         var sql = new SqlBuilder();
         var t = sql.AddTemplate(
-            "SELECT u.id, u.username, u.description, u.created_at, u.online_at, u.status, u.is_18_plus, ja.id as join_application_id, ja.status as join_application_status, ui.id as invite_id, ui.author_id as invite_author_id, us.*, ue.* FROM \"user\" u LEFT JOIN user_settings us ON us.user_id = u.id LEFT JOIN user_economy ue on u.id = ue.user_id LEFT JOIN join_application ja on u.id = ja.user_id LEFT JOIN user_invite ui on u.id = ui.user_id /**where**/ /**orderby**/ LIMIT :limit OFFSET :offset", new {limit, offset });
+            "SELECT u.id, u.username, u.description, u.created_at, u.online_at, u.status, u.is_18_plus, us.*, ue.* FROM \"user\" u LEFT JOIN user_settings us ON us.user_id = u.id LEFT JOIN user_economy ue on u.id = ue.user_id /**where**/ /**orderby**/ LIMIT :limit OFFSET :offset", new {limit, offset });
         sql.OrderBy(orderByColumn + " " + orderByMode + " NULLS LAST");
         if (!string.IsNullOrEmpty(query))
         {
@@ -717,8 +663,6 @@ public class AdminApiController : ControllerBase
                 c.trade_privacy = ((GeneralPrivacy)c.trade_privacy).ToString();
                 c.private_message_privacy = ((GeneralPrivacy)c.private_message_privacy).ToString();
                 c.gender = ((Gender)c.gender).ToString();
-                if (c.join_application_status != null)
-                    c.join_application_status = ((UserApplicationStatus) c.join_application_status).ToString();
                 c.is_admin = (object)false; // todo
                 c.is_moderator = (object)false; // todo
                 // just in case
@@ -737,8 +681,6 @@ public class AdminApiController : ControllerBase
             user_id = userId,
         });
         if (result == null) throw new StaffException("Invalid user ID");
-        var joinInvite = await services.users.GetUserInvite(userId);
-        var joinApp = await services.users.GetApplicationByUserId(userId);
         var membership = await services.users.GetUserMembership(userId);
         var year = await services.users.GetYear(userId);
         
@@ -754,8 +696,6 @@ public class AdminApiController : ControllerBase
         result.is_admin = (object)await StaffFilter.IsStaff(userId);
         result.is_moderator = (object)false;
         result.membership = (object?)membership;
-        result.invite = (object?) joinInvite;
-        result.joinApp = (object?) joinApp;
         result.year = year.ToString();
         return result;
     }
@@ -1232,33 +1172,6 @@ public class AdminApiController : ControllerBase
                         "Body",
                         "Author ID",
                         "User ID",
-                        "Date",
-                    },
-                };
-            }
-            case "applications":
-            {
-                var result =
-                    await db.QueryAsync(
-                        "SELECT id, application_id, author_user_id, new_status, created_at FROM moderation_change_join_app ORDER BY id DESC LIMIT :limit OFFSET :offset", new
-                        {
-                            limit,
-                            offset,
-                        });
-                return new
-                {
-                    data = result.Select(c =>
-                    {
-                        var oldStatus = (int) c.new_status;
-                        c.new_status = (object)(UserApplicationStatus) oldStatus;
-                        return c;
-                    }),
-                    columns = new List<string>
-                    {
-                        "#",
-                        "Application ID",
-                        "Author ID",
-                        "New Status",
                         "Date",
                     },
                 };
@@ -2173,80 +2086,6 @@ Thank you for your understanding,
         await services.privateMessages.CreateMessage(userId, 1, "Username Reset",
             "Hello,\n\nYour username has been reset due to abuse concerns. You can request a new username by contacting a staff member.\n\n-The Roblox Team");
        
-    }
-
-    [HttpGet("applications/update-lock"), StaffFilter(Access.ManageApplications)]
-    public async Task UpdateLocks(string ids)
-    {
-        var parsed = ids.Split(",");
-        if (parsed.Length is < 0 or > 10)
-            return;
-        
-        await services.users.AcquireApplicationLocks(userSession.userId, parsed);
-    }
-
-    [HttpGet("applications/list"), StaffFilter(Access.ManageApplications)]
-    public async Task<dynamic> GetApplications(UserApplicationStatus? status, int offset, SortOrder sortOrder, string? searchQuery = null, ApplicationSearchColumn? searchColumn = null)
-    {
-        return await services.users.GetApplications(status, offset, sortOrder, status == UserApplicationStatus.Pending ? userSession.userId : null, searchQuery, searchColumn);
-    }
-
-    [HttpGet("applications/details"), StaffFilter(Access.ManageApplications)]
-    public async Task<dynamic> GetApplicationById(string id)
-    {
-        var result = await services.users.GetApplicationById(id);
-        if (result == null)
-            throw new StaffException("Application ID is invalid or does not exist");
-        return result;
-    }
-
-    [HttpPost("applications/{applicationId}/approve"), StaffFilter(Access.ManageApplications)]
-    public async Task<dynamic> ApproveApplication(string applicationId)
-    {
-        var appInfo = await services.users.GetApplicationById(applicationId);
-        if (appInfo?.status == UserApplicationStatus.Pending)
-        {
-            await AwardCommissionForApplicationReview();
-        }
-        var result = await services.users.ProcessApplication(applicationId, userSession.userId, UserApplicationStatus.Approved);
-        return new
-        {
-            joinId = result,
-        };
-    }
-    
-    [HttpPost("applications/{applicationId}/decline"), StaffFilter(Access.ManageApplications)]
-    public async Task DeclineApplication(string applicationId, string reason)
-    {
-        var appInfo = await services.users.GetApplicationById(applicationId);
-        if (appInfo?.status == UserApplicationStatus.Pending)
-        {
-            await AwardCommissionForApplicationReview();
-        }
-        await services.users.ProcessApplication(applicationId, userSession.userId, UserApplicationStatus.Rejected, reason);
-    }
-    
-    [HttpPost("applications/{applicationId}/decline-silent"), StaffFilter(Access.ManageApplications)]
-    public async Task DeclineApplicationSilently(string applicationId)
-    {
-        var appInfo = await services.users.GetApplicationById(applicationId);
-        if (appInfo?.status == UserApplicationStatus.Pending)
-        {
-            await AwardCommissionForApplicationReview();
-        }
-        await services.users.ProcessApplication(applicationId, userSession.userId, UserApplicationStatus.SilentlyRejected);
-    }
-    
-    [HttpPost("applications/{applicationId}/clear"), StaffFilter(Access.ClearApplications)]
-    public async Task ClearApplication(string applicationId)
-    {
-        await services.users.ClearApplication(applicationId);
-    }
-
-    [HttpGet("invites/{userId:long}"), StaffFilter(Access.ManageInvites)]
-    public async Task<dynamic> GetInvitesByUser(long userId)
-    {
-        return await services.users.GetInvitesByUser(userId);
     }
 
     [HttpGet("text-moderation/get-latest"), StaffFilter(Access.GetAllAssetComments)]

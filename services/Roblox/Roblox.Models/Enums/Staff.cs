@@ -6,8 +6,8 @@ public enum Access
     GetAlert,
     SetAlert,
     CreateUser,
-    ForceApplication,
-    GetPendingGroupIcons,
+    // 4 retired: ForceApplication (application process removed). Ordinal preserved (int-backed).
+    GetPendingGroupIcons = 5,
     GetAssetModerationDetails,
     GetPendingModerationItems,
     GetPendingModerationGameIcons,
@@ -63,10 +63,9 @@ public enum Access
     GetUserTransactions,
     ResetUsername,
     ResetDescription,
-    ManageApplications,
-    ClearApplications,
-    ManageInvites,
-    GetGroupWall,
+    // 60/61/62 retired: ManageApplications, ClearApplications, ManageInvites
+    // (application + invite systems removed). Ordinals preserved (int-backed).
+    GetGroupWall = 63,
     DeleteGroupWallPost,
     GetAllAssetComments,
     GetAllUserStatuses,

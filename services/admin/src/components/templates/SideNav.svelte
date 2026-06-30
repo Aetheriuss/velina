@@ -69,18 +69,6 @@
 			permission: "ManageFeatureFlags",
 		},
 		{
-			name: 'Applications',
-			link: '/admin/applications',
-			icon: TerminalIcon,
-			permission: 'ManageApplications',
-		},
-		{
-			name: 'Force Application',
-			link: '/admin/force-application',
-			icon: TerminalIcon,
-			permission: 'ForceApplication',
-		},
-		{
 			name: 'Reports',
 			link: '/admin/reports',
 			icon: StarIcon,

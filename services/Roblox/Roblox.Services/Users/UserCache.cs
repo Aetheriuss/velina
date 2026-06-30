@@ -11,22 +11,6 @@ public class UserSessionsCache : GenericMemoryCache<string, SessionEntry?>
     
 }
 
-public class UserInviteCache : GenericMemoryCache<long, UserInviteEntry?>
-{
-    public UserInviteCache() : base(TimeSpan.FromMinutes(5))
-    {
-        
-    }
-}
-
-public class UserApplicationCache : GenericMemoryCache<long, UserApplicationEntry?>
-{
-    public UserApplicationCache() : base(TimeSpan.FromMinutes(5))
-    {
-        
-    }
-}
-
 public class GetUserByIdCache : GenericMemoryCache<long, UserInfo>
 {
     // short ttl so we don't risk having banned users online for too long

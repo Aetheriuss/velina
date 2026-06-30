@@ -18,12 +18,6 @@ public class CreateUserRequest
     public long userId { get; set; }
 }
 
-public class ForceApplicationReq
-{
-    public long userId { get; set; }
-    public string? socialURL { get; set; }
-}
-
 public class PendingAssetEntry
 {
     public long id { get; set; }
