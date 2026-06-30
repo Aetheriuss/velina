@@ -17,7 +17,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `61e53a2` | Phase R: remove account-application, invite, social-verification, Twitter (UI + flow) |
 | `13a6231` | Phase R complete: dead code, enums, DB drop migrations |
 | `d2726c9` | Phase 1: runtime config → env vars |
-| _(pending)_ | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
+| `c18b974` | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
 
 ---
 
