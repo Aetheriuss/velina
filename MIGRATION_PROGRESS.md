@@ -16,7 +16,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `e2d54dd` | Phase 0 scaffold + remove forums & clothing-stealer |
 | `61e53a2` | Phase R: remove account-application, invite, social-verification, Twitter (UI + flow) |
 | `13a6231` | Phase R complete: dead code, enums, DB drop migrations |
-| _(pending)_ | Phase 1: runtime config → env vars |
+| `d2726c9` | Phase 1: runtime config → env vars |
 
 ---
 
