@@ -26,7 +26,10 @@ interface Opts {
 const doRequest = async <T>(method: Method, path: string, opts: Opts = {}, isRetry = false): Promise<T> => {
   const headers: Record<string, string> = { 'x-csrf-token': _csrf, ...(opts.headers || {}) };
   let payload: BodyInit | undefined;
-  if (opts.body !== undefined) {
+  if (opts.body instanceof FormData) {
+    // Multipart upload — let the browser set the content-type boundary.
+    payload = opts.body;
+  } else if (opts.body !== undefined) {
     headers['content-type'] = 'application/json';
     payload = JSON.stringify(opts.body);
   }

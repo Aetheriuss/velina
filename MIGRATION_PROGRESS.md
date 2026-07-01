@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 🔄 (6a,6b ✅; 6c,6d pending) · Phase 7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (60 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 🔄 (6a–6c ✅; 6d pending) · Phase 7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (70 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -27,6 +27,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `027c5af` | Phase 5: internal forms → App Router |
 | `1dce0a5` | Phase 6a: admin foundation (shell/nav/permissions/dashboard/players) |
 | `3324e7c` | Phase 6b: admin user management (12 pages) |
+| _(pending)_ | Phase 6c: admin assets & content moderation (10 pages) |
 
 ---
 
@@ -244,7 +245,7 @@ Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF
 |-------|-------|--------|
 | **6a — Foundation** | shell/nav/perms, dashboard, players, permissions(staff list) | ✅ |
 | **6b — User management** | manage-user + usernames/badges/robux/inventory/ban/message/transactions/moderation-history/trades/manage-user-asset/track-asset | ✅ |
-| **6c — Assets & content mod** | asset approval/resolve/create/create-for-item/version/clothing, product update, re-render, text moderation, reports | ⏳ |
+| **6c — Assets & content mod** | asset approval/resolve/create/create-for-item/version/clothing, product update, re-render, text moderation, reports | ✅ |
 | **6d — System/misc + cutover** | logs, memos, feature-flags, lottery, groups, game-history, create-player; flip `/admin` out of BypassUrls; forum cosmetics cleanup | ⏳ |
 
 ### ✅ Batch 6a — Admin foundation
@@ -258,6 +259,16 @@ Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF
 - **Sub-pages**: ban-user (reason/internal/expiry/quick-fill), message-user (templates + placeholder guard), manage-robux-user (give/remove R$/Tix), manage-usernames (delete), manage-badges-user (give/remove), manage-inventory-user (give/remove collectibles), user-transactions + user-trades (typed, paginated tables), moderation-history, manage-user-asset (item trace), asset/track (circulation / owners).
 - New: `components/admin/{ManageTextContent,ManagePermissions}`.
 - Verified: Next build green, jest green, SSR smoke (all 12 routes 200, no errors).
+
+### ✅ Batch 6c — Admin assets & content moderation
+- **Asset moderation** `app/admin/asset/approval`: unified pending queue (assets + icons + group icons) with OK / OK-18+ / Bad / Bad+Delete per item.
+- **Create flows** (multipart via `adminClient` FormData support): `asset/create` (rbxm or package CSV), `asset/create/clothing` (texture), `asset/version/create` (rbxm); `asset/create-for-item` (Roblox URL import).
+- **Product** `app/admin/product/update`: search → product form (`PATCH /asset/product`) + embedded `ProductHistory` + `SaleHistory` (with per-row refund, gated).
+- **Misc**: `asset/re-render`, `resolve-url` (thumbnail → asset/user/group).
+- **Text moderation** `app/admin/text-posts`: 4 queues (asset comments / group wall / user status / group status) with delete + request-payment; ForumPost branch dropped (Phase R); localStorage "clock" paging simplified to first-page fetches (noted).
+- **Reports** `app/admin/reports`: list by status + accept/decline/invalid + paging.
+- New: `components/admin/{ProductHistory,SaleHistory}`; `adminClient` extended for multipart FormData.
+- Verified: Next build green, jest green, SSR smoke (all 10 routes 200, no errors).
 
 ---
 
