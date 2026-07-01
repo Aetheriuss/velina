@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a,4b ✅; 4c–4e pending) · Phases 5–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (20 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a,4b,4c ✅; 4d,4e pending) · Phases 5–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (25 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -21,6 +21,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `0f5455a` | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
 | `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
 | `3fc6e40` | Phase 4b: games listing + game details |
+| _(pending)_ | Phase 4c: users (profile/friends/inventory/favorites/search) |
 
 ---
 
@@ -151,7 +152,7 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 |-------|--------|--------|
 | **4a — Catalog** | `/catalog`, `/catalog/[assetId]/[name]` | ✅ |
 | **4b — Games** | `/games`, `/games/[assetId]/[name]` | ✅ |
-| **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/User.aspx`, `/search/users` | ⏳ |
+| **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/search/users` (`/User.aspx` kept as pages redirect) | ✅ |
 | **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ⏳ |
 | **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ⏳ |
 
@@ -167,6 +168,15 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 - **Deferred** (noted): per-server join (API only takes placeId, no guid), server player avatars, and the game comments/recommendations tabs.
 - `components/sharedAssetPage` (+ `gameDetails`/`catalogDetailsPage` legacy trees) now unused by any route → left for Phase 7 cleanup.
 - Verified: Next build green, jest green, SSR smoke (`/games` + game route 200, no errors).
+
+### ✅ Batch 4c — Users
+- **Profile** (`app/users/[userId]/profile/page.tsx` + `_components/ProfileActions`): header (headshot, display/username, presence dot, membership, friends/followers/following counts), friend/follow/message actions (friendStatus-driven add/accept/unfriend, follow/unfollow), description, currently-wearing (`getAvatar`→asset thumbs), friends preview, groups (icons), places (`getUserGames`→universe icons), Roblox badges, stats (join date/post count/previous names).
+- **Friends** (`friends/page.tsx`): tabs Friends/Followers/Followings + Requests (self only), headshots, cursor pagination, actions (remove/unfollow/accept/ignore).
+- **Inventory + Favorites** (`_components/InventoryView` shared, `inventory/` + `favorites/` wrappers): category sidebar (asset types), item grid w/ thumbnails + serial, cursor pagination (favorites uses numeric pageNumber cursors).
+- **Search** (`app/search/users/page.tsx`): keyword box → `searchUsers` → presence + headshots, result rows.
+- `/User.aspx` (`?ID=`→profile SSR redirect) intentionally **kept on the pages router** — pure redirect, no UI.
+- **Deferred** (noted): profile "currently wearing" outfit pagination dots, collections tab, relationship-statistics widget styling niceties, forum post count is display-only.
+- Verified: Next build green, jest green, SSR smoke (all 5 app routes 200, `/User.aspx` 307, no errors).
 
 ---
 
