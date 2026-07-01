@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 ✅ · Phase 7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (77 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
+- **Status:** ✅ **ALL PHASES COMPLETE** — Phase 0 · R · 1 · 2 · 3 · 4 · 5 · 6 · 7.
+- **Build health:** `.NET` 0 errors · Next frontend builds (App Router only; `pages/` reduced to API routes) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -29,6 +29,10 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `3324e7c` | Phase 6b: admin user management (12 pages) |
 | `7131171` | Phase 6c: admin assets & content moderation (10 pages) |
 | `57adac9` | Phase 6d: admin system/misc + `/admin` cutover |
+| `866631f` | Phase 7: remove dead Svelte admin (services/admin + bundle routes) |
+| `6d56385` | Phase 7: delete shadowed Razor auth/internal pages |
+| `051b584` | Phase 7: remove dead legacy page-component trees + login |
+| `53d2ace` | Phase 7: tear down pages-router UI + drop dead deps |
 
 ---
 
@@ -282,11 +286,33 @@ Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF
 
 ---
 
-## ⏳ Remaining phases
+## ✅ Phase 7 — Cleanup (complete & verified)
 
-| Phase | Scope | Size |
-|-------|-------|------|
-| **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |
+Removed the code that Phases 2–6 left shadowed/dead:
+- **Svelte admin**: deleted `services/admin/` and `AdminApiController`'s bundle-serving routes (`/admin/build/*`, `/admin/` HTML). The `/admin-api/api/*` JSON endpoints are untouched.
+- **Razor pages**: deleted the migrated `Pages/Auth/{Home,TOS,Privacy,Credits,Signup,PasswordReset,ChooseUsername,AccountDeletion}` + `Pages/Internal/{Age,Membership,PlaceUpdate,ReportAbuse,CollectibleInventory,Updates}`.
+- **Legacy frontend**: migrated `/User.aspx` to the App Router; removed `pages/{_app,_document,404,User.aspx,login}.js` (pages/ is now **API-only**), `components/loginPage`, ~30 dead page-component trees + the legacy chrome (navbar/footer/mainWrapper/globalAlert/header/navSidebar), dead `styles/` + `services/theme.js`.
+- **Deps**: dropped `bootstrap`, `nextjs-progressbar` (unreferenced).
+
+### Corrections vs. the original Phase 7 plan (all verified)
+1. **`_Layout.cshtml` kept** — several Razor pages remain and use it (see below), so it can't be deleted.
+2. **`react-jss` + `unstated-next` kept** — still live: `components/playerHeadshot` (used by the bridged `<Chat/>`) uses react-jss; `chat`/`stores/authentication` use unstated-next. `jss` stays as react-jss's transitive dep.
+3. **`AdminApiController` kept** — it hosts the live `/admin-api/api/*` API; only its dead bundle routes were removed.
+
+### Intentionally still on .NET (Razor, all reachable & correct)
+`/auth/break-glass` (owner/staff password login), `/auth/captcha` (bot gate), `/auth/notapproved` (ban page), Discord OAuth (`/auth/discord/login` + `/callback`), `/auth/ticket`, `/internal/create-place` (heavy anti-abuse `OnPost`), `/internal/{year,dev,faq,donate,contest/first-contest}`, `Chat`. These keep `_Layout.cshtml` + `Program.cs`/`Configuration.AdminBundleDirectory` (harmless, unused) alive.
+
+---
+
+## 🎉 Migration complete
+
+The entire user-facing UI, auth, internal forms, and admin panel now run on **one Next.js App Router app** (2020 light/dark theme, React Query, Tailwind), backed by the .NET JSON API. `services/2016-roblox-main/pages/` holds only two API routes; `services/admin` is gone.
+
+**Remaining deliberate .NET/Razor surface** is the short list above (security-sensitive or out-of-scope-by-design), to be modernized later if desired.
+
+**Deferred sub-features** (functional gaps recorded across phases, all optional follow-ups): currency-exchange market + avatar color editor (4d), catalog sell/delist + sale-history chart + owners tab (4a), group roles/permissions editor (4e), per-server join + server avatars (4b).
+
+**⚠️ Not exercised against a live backend from this environment:** every data-bound render + mutation across all phases (buy/trade/vote/wall/moderation/admin actions/etc.). Builds, type-checks, jest, and prod-server SSR (no-crash) are green throughout, but a full E2E pass against a running `.NET` API + Postgres/Redis (+ Discord creds) is the recommended gate before shipping — plus applying the 3 Phase-R DB drop migrations.
 
 ---
 
