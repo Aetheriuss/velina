@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a–4d ✅; 4e pending) · Phases 5–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (32 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phases 5–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (39 App Router routes; legacy `pages/` down to 3: `/404`, `/User.aspx`, `/login`) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -23,6 +23,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `3fc6e40` | Phase 4b: games listing + game details |
 | `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
 | `81084bb` | Phase 4d: My self-service (account/character/item/money/messages/ads) |
+| _(pending)_ | Phase 4e: groups/trade/places |
 
 ---
 
@@ -145,7 +146,7 @@ All five named routes converted to App Router and re-skinned to 2020 tokens. Per
 
 ---
 
-## 🔄 Phase 4 — Core SPA routes (in progress; broken into sub-batches)
+## ✅ Phase 4 — Core SPA routes (complete; done in sub-batches)
 
 Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-skin with Tailwind, one commit per batch. `pages/` route removed as each App Router route lands (both can't own the same path). `components/sharedAssetPage` is shared with the games route → stays until Batch 4b.
 
@@ -155,7 +156,7 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 | **4b — Games** | `/games`, `/games/[assetId]/[name]` | ✅ |
 | **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/search/users` (`/User.aspx` kept as pages redirect) | ✅ |
 | **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ✅ |
-| **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ⏳ |
+| **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ✅ |
 
 ### ✅ Batch 4a — Catalog
 - **Listing** (`app/catalog/page.tsx` + `_components/CatalogCard`, `_constants`, `_types`): category nav (ported `catalogPageNavigation` tree), sort, keyword search, cursor pagination, results grid (thumbnail/name/creator/price + Limited badges). `searchCatalog`→`getItemDetails`→`multiGetAssetThumbnails` via React Query, `keepPreviousData` for smooth paging.
@@ -190,13 +191,27 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 - **Deferred** (noted): the **currency-exchange market** (Trade Currency tab: positions/market-activity/order modal — large nested feature) and the **avatar color/body-part editor**; both are self-contained and can be a follow-up. `/My/Trades.aspx` item-trades stays for Batch 4e.
 - Verified: Next build green, jest green, SSR smoke (all 7 app routes 200, no errors).
 
+### ✅ Batch 4e — Groups/Trade/Places
+- **Group page** (`app/My/Groups.aspx`): header (icon/name/owner/members), shout, join/leave (membership from `getUserGroups`), wall (view/post/delete), members grid (headshots, load-more).
+- **Group admin** (`app/My/GroupAdmin.aspx`): tabs — Group Info (`setGroupDescription`/`setGroupIcon`), Members (`getMembers`+`getRoles`→`setUserRole`), Settings (`getGroupSettings`/`setGroupSettings`), Payouts (`getUserIdByUsername`→`oneTimePayout`), Revenue (`getGroupTransactionSummary`+`formatSummaryResponse`).
+- **Create group** (`app/My/CreateGroup.aspx`): name/description/emblem → `createGroup`.
+- **Audit log** (`app/Groups/Audit.aspx`): `getGroupAuditLog` table with action formatting + cursor paging.
+- **Trade window** (`app/Trade/TradeWindow.aspx`): partner + dual collectible-inventory pickers (`getCollectibleInventory`, 4-item cap) + robux → `createTrade`/`counterTrade`.
+- **My trades** (`app/My/Trades.aspx`): Inbound/Outbound/Completed/Inactive tabs, expand (`getTradeDetails`), accept/decline.
+- **Place update** (`app/places/[placeId]/update`): basic settings (name/description/genre/comments → `updateAsset`) + max players (`setUniverseMaxPlayers`) + version upload (`uploadAssetVersion`).
+- **Deferred** (noted): the group **roles/permissions editor** (nested permission object — `createRole`/`editRole`/`deleteRole`/`setRolePermissions` exist but the editor UI is a large follow-up), group **change-owner**, and the group **store** tab.
+- Verified: Next build green, jest green, SSR smoke (all 7 app routes 200, no errors).
+
+**Phase 4 net:** legacy `pages/` is down to 3 routes — `/404` (used by `userProfile`'s ban case + Pages-Router 404), `/User.aspx` (SSR redirect), `/login` (old Discord CTA; superseded by `/auth/login`). These get cleaned in Phase 7.
+
+**Phase 4 deferred sub-features (candidates for a follow-up pass):** currency-exchange market (4d), avatar color/body-part editor (4d), catalog sell/delist + sale-history chart + owners tab (4a), group roles/permissions editor (4e), full server-join & per-server avatars (4b).
+
 ---
 
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **4 — Core SPA routes** | See the Phase 4 sub-batch table above (in progress). | XL |
 | **5 — Internal forms** | Migrate surviving `/internal/*` (create-place, place-update, report-abuse, membership, collectibles, age, updates) to `app/internal/*`. | M |
 | **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |
 | **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |
