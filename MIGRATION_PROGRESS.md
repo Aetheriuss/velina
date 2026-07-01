@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a ✅; 4b–4e pending) · Phases 5–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (18 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a,4b ✅; 4c–4e pending) · Phases 5–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (20 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -20,6 +20,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `c18b974` | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
 | `0f5455a` | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
 | `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
+| _(pending)_ | Phase 4b: games listing + game details |
 
 ---
 
@@ -149,7 +150,7 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 | Batch | Routes | Status |
 |-------|--------|--------|
 | **4a — Catalog** | `/catalog`, `/catalog/[assetId]/[name]` | ✅ |
-| **4b — Games** | `/games`, `/games/[assetId]/[name]` | ⏳ |
+| **4b — Games** | `/games`, `/games/[assetId]/[name]` | ✅ |
 | **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/User.aspx`, `/search/users` | ⏳ |
 | **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ⏳ |
 | **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ⏳ |
@@ -159,6 +160,13 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 - **Item details** (`app/catalog/[assetId]/[name]/page.tsx` + `_components/{CatalogDetail,BuyModal,Resellers,Recommendations,Comments}`): thumbnail, creator, description, genres, **buy flow** (`purchaseItem` w/ balance check + insufficient-funds/error states), reseller private-sales (buy from seller), favorite toggle, recommendations, comments (view + post). Places (assetType 9) redirect to the games route.
 - **Deferred** (noted, not blocking): sell/delist modals + sale-history chart + owners tab (owner-side management; overlaps Batch 4d item config), the place-406 `multiGetPlaceDetails` fallback, and the non-functional genre filter (legacy `searchCatalog` never sent a genre param).
 - Verified: Next build green, jest green, SSR smoke (`/catalog` + item route 200, no errors).
+
+### ✅ Batch 4b — Games
+- **Listing** (`app/games/page.tsx`): `GamesDefaultSorts` → per-sort `getGameList` → `multiGetUniverseIcons`, horizontal card rows (icon/name/playing/like-ratio). Same pattern as the Phase 2 home game rows.
+- **Details** (`app/games/[assetId]/[name]/page.tsx` + `_components/{GameDetail,PlayButton,Vote,Servers}`): placeId → `multiGetPlaceDetails` → `multiGetUniverseDetails`; media carousel (`getGameMedia`→`multiGetAssetThumbnails`, rootPlace fallback), **Play** (`launchGame` join-script protocol launch; login-gated; honors `launchUsingEsWeb`), **Vote** (`multiGetGameVotes`/`voteOnGame` with play-first error), stats (playing/visits/favorites/maxPlayers/genre/created/updated), **Servers** (`getServers` load-more). Removed the legacy roblox.com no-flag redirect (nonsensical for a clone) in favor of the join-script launch.
+- **Deferred** (noted): per-server join (API only takes placeId, no guid), server player avatars, and the game comments/recommendations tabs.
+- `components/sharedAssetPage` (+ `gameDetails`/`catalogDetailsPage` legacy trees) now unused by any route → left for Phase 7 cleanup.
+- Verified: Next build green, jest green, SSR smoke (`/games` + game route 200, no errors).
 
 ---
 
