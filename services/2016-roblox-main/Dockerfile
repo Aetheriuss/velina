@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
-# Velina frontend (Next.js 14 / React 18, Pages Router) — DEP-1 / Phase 6.
+# Velina frontend (Next.js 14 / React 18, App Router) — unified UI migration.
 #
-# IMPORTANT (RISK-FE-2): next.config.js reads config.json at BUILD time and publicRuntimeConfig
-# (incl. the public domain) is baked into the bundle. config.json is gitignored — it must exist
-# in the build context. Rebuild this image whenever the domain or flags change.
+# IMPORTANT (RISK-FE-2): next.config.js reads config.json at BUILD time and maps it onto env vars;
+# the NEXT_PUBLIC_* values (incl. the public domain + flags) are inlined into the client bundle.
+# config.json is gitignored — it MUST exist in the build context (the RUN below enforces this).
+# Rebuild this image whenever the domain or flags change.
 #
 # Single-stage on purpose: `next start` needs the full dependency tree + .next + config.json.
 FROM node:22-bookworm-slim AS runtime

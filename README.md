@@ -73,7 +73,7 @@ Go into ```services/api``` create a folder named ```storage``` inside that folde
 
 go to ```services/Roblox/Roblox.Website``` and in command prompt do ```dotnet run```
 
-go to ```services/admin``` and run ```npm i``` and ```npm run build``` in a command.
+(The admin panel is now part of the Next.js frontend at ```/admin``` — there is no separate admin build step anymore.)
 
 go to ```services/2016-roblox-main``` and create a file named ```config.json```
 

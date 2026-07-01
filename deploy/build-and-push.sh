@@ -7,8 +7,8 @@
 #   - Docker + compose v2, logged in to the registry (see step "docker login" below).
 #   - repo-root .env created (cp deploy/.env.example .env, then fill in — see generate-secrets.sh).
 #     The compose file references required vars even at build time, so .env must exist.
-#   - services/2016-roblox-main/config.json present with the PROD domain. The frontend bakes
-#     publicRuntimeConfig (incl. the domain) at BUILD time (RISK-FE-2), so it must be the prod one.
+#   - services/2016-roblox-main/config.json present with the PROD domain. The frontend inlines the
+#     public config (domain + flags) at BUILD time via NEXT_PUBLIC_* (RISK-FE-2), so it must be prod.
 #
 # Registry: set VELINA_REGISTRY / VELINA_TAG in .env. Default is ghcr.io/aetheriuss.
 # GHCR login (one time):

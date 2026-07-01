@@ -39,7 +39,6 @@ Roblox.Configuration.GroupIconsDirectory = configuration.GetSection("Directories
 Roblox.Configuration.PublicDirectory = configuration.GetSection("Directories:Public").Value;
 Roblox.Configuration.XmlTemplatesDirectory = configuration.GetSection("Directories:XmlTemplates").Value;
 Roblox.Configuration.JsonDataDirectory = configuration.GetSection("Directories:JsonData").Value;
-Roblox.Configuration.AdminBundleDirectory = configuration.GetSection("Directories:AdminBundle").Value;
 Roblox.Configuration.EconomyChatBundleDirectory = configuration.GetSection("Directories:EconomyChatBundle").Value;
 Roblox.Configuration.BaseUrl = configuration.GetSection("BaseUrl").Value;
 // Frontend (Next.js) proxy target — internal container address in prod, localhost in dev (DEP-3).

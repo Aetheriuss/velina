@@ -39,8 +39,10 @@ in a separate **Windows VM** (plan §6), not in this compose.
    - `cloudflared/config.yml` + `cloudflared/credentials.json` (see `cloudflared/config.example.yml`).
 
 4. **Data dir** `$VELINA_DATA_DIR` (`/data` in-container): create the subdirs your `Directories:*`
-   point at, and populate static content (public assets, XML templates, JSON data, admin bundle,
+   point at, and populate static content (public assets, XML templates, JSON data,
    economy-chat bundle). These survive image rebuilds.
+   - The admin panel is no longer a separate bundle — it's part of the Next.js frontend now, so
+     there's no `adminbundle` dir to populate.
    - **Required:** seed `Directories:JsonData` with `avatar-colors.json`, or every avatar
      render/redraw 500s (`AvatarMetadata.GetColors()` reads `<JsonData>/avatar-colors.json`):
      ```bash
