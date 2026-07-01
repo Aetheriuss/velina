@@ -24,7 +24,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
 | `81084bb` | Phase 4d: My self-service (account/character/item/money/messages/ads) |
 | `915d8ad` | Phase 4e: groups/trade/places |
-| _(pending)_ | Phase 5: internal forms → App Router |
+| `027c5af` | Phase 5: internal forms → App Router |
 
 ---
 
