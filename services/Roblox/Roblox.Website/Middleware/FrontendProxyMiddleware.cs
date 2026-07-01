@@ -55,9 +55,11 @@ public class FrontendProxyMiddleware
         "/internal/create-place",
         "/internal/contest/first-contest",
         "/auth/notapproved",
-        // Admin
+        // Admin. Phase 6 ported the Svelte admin SPA to the App Router, so `/admin` now proxies to
+        // Next. Only the JSON API `/admin-api/api` stays on .NET (StaffFilter enforces access there).
+        // NOTE: "/admin-api/api" must remain listed (it's a prefix-superset issue-free entry); the
+        // "/admin" catch-all was removed so /admin/* reaches Next.
         "/admin-api/api",
-        "/admin",
         // Web
         "/thumbs/avatar.ashx",
         "/thumbs/avatar-headshot.ashx",

@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 🔄 (6a–6c ✅; 6d pending) · Phase 7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (70 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 ✅ · Phase 7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (77 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -28,6 +28,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `1dce0a5` | Phase 6a: admin foundation (shell/nav/permissions/dashboard/players) |
 | `3324e7c` | Phase 6b: admin user management (12 pages) |
 | `7131171` | Phase 6c: admin assets & content moderation (10 pages) |
+| _(pending)_ | Phase 6d: admin system/misc + `/admin` cutover |
 
 ---
 
@@ -235,7 +236,7 @@ Migrated the surviving `/internal/*` Razor forms to the App Router. Same princip
 
 ---
 
-## 🔄 Phase 6 — Admin port (in progress; sub-batches)
+## ✅ Phase 6 — Admin port (complete; done in sub-batches)
 
 Porting the Svelte admin SPA (`services/admin`, ~33 svelte-routing pages hitting `/admin-api/api/*`) to `app/admin/*`. `/admin` stays in `BypassUrls` (served by the Svelte bundle) until 6d flips it over, so the new routes build but aren't served yet.
 
@@ -246,7 +247,7 @@ Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF
 | **6a — Foundation** | shell/nav/perms, dashboard, players, permissions(staff list) | ✅ |
 | **6b — User management** | manage-user + usernames/badges/robux/inventory/ban/message/transactions/moderation-history/trades/manage-user-asset/track-asset | ✅ |
 | **6c — Assets & content mod** | asset approval/resolve/create/create-for-item/version/clothing, product update, re-render, text moderation, reports | ✅ |
-| **6d — System/misc + cutover** | logs, memos, feature-flags, lottery, groups, game-history, create-player; flip `/admin` out of BypassUrls; forum cosmetics cleanup | ⏳ |
+| **6d — System/misc + cutover** | logs, memos, feature-flags, lottery, groups, game-history, create-player; flip `/admin` out of BypassUrls; forum cosmetics cleanup | ✅ |
 
 ### ✅ Batch 6a — Admin foundation
 - **Dashboard** (`app/admin/page.tsx`): stat cards (signups past hour/day, online/in-game expandable, pending assets), site-wide alert manager — all permission-gated.
@@ -270,13 +271,21 @@ Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF
 - New: `components/admin/{ProductHistory,SaleHistory}`; `adminClient` extended for multipart FormData.
 - Verified: Next build green, jest green, SSR smoke (all 10 routes 200, no errors).
 
+### ✅ Batch 6d — Admin system/misc + cutover
+- **Pages**: `logs` (dynamic-column table, `applications` type dropped per Phase R), `memos` (static, rank-filtered), `feature-flags` (enable/disable), `lottery` (items + run, gated), `groups` (list/search-by-id-or-name + detail + lock/reset + audit log), `game-history` (play records + duration, gated), `user/create` (create player, admin-only).
+- **Cutover**: removed the `/admin` entry from `FrontendProxyMiddleware.BypassUrls` (kept `/admin-api/api`) — `/admin/*` now proxies to the Next App Router; the JSON API stays on .NET (StaffFilter enforces access). Removed the `/Forum` + `/Forum/*` robots.txt disallow entries (deferred forum cosmetic from Phase R). The Svelte `TextPost*` forum branches are moot — the whole `services/admin` bundle is deleted in Phase 7.
+- Verified: `.NET` + Next builds green, jest green, SSR smoke (all 7 routes 200, no errors).
+
+**Phase 6 net:** ~33 Svelte admin pages ported to `app/admin/*` (33 App Router admin routes) on a shared `adminClient` + permission provider; `/admin` cut over to Next. `services/admin` (the Svelte bundle) is now dead → removed in Phase 7.
+
+**Not verified against a live backend** (needs `/admin-api/*` + DB): all admin mutations (ban/give/moderate/create/refund/lottery/etc.). The UI renders and gates correctly without a backend; data-bound behavior needs a staff session to exercise.
+
 ---
 
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |
 | **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |
 
 ---

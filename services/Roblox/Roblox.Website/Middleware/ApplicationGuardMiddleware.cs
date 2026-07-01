@@ -286,8 +286,6 @@ public class ApplicationGuardMiddleware
                 "/Users/*",
                 "/Catalog",
                 "/Catalog/*",
-                "/Forum",
-                "/Forum/*",
                 "/Internal/*",
             };
             var newItems = new List<string>();
