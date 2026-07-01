@@ -34,7 +34,7 @@ export default function HomeRedirectPage() {
         Powering imagination. Sign in to play games, customize your avatar, and trade with
         the community.
       </p>
-      <Link href="/login">
+      <Link href="/auth/login">
         <Button size="lg">Sign In</Button>
       </Link>
     </div>
