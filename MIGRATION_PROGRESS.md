@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phases 4–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (16 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a ✅; 4b–4e pending) · Phases 5–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (18 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -19,6 +19,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `d2726c9` | Phase 1: runtime config → env vars |
 | `c18b974` | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
 | `0f5455a` | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
+| _(pending)_ | Phase 4a: catalog listing + item details (buy-side) |
 
 ---
 
@@ -141,11 +142,31 @@ All five named routes converted to App Router and re-skinned to 2020 tokens. Per
 
 ---
 
+## 🔄 Phase 4 — Core SPA routes (in progress; broken into sub-batches)
+
+Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-skin with Tailwind, one commit per batch. `pages/` route removed as each App Router route lands (both can't own the same path). `components/sharedAssetPage` is shared with the games route → stays until Batch 4b.
+
+| Batch | Routes | Status |
+|-------|--------|--------|
+| **4a — Catalog** | `/catalog`, `/catalog/[assetId]/[name]` | ✅ |
+| **4b — Games** | `/games`, `/games/[assetId]/[name]` | ⏳ |
+| **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/User.aspx`, `/search/users` | ⏳ |
+| **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ⏳ |
+| **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ⏳ |
+
+### ✅ Batch 4a — Catalog
+- **Listing** (`app/catalog/page.tsx` + `_components/CatalogCard`, `_constants`, `_types`): category nav (ported `catalogPageNavigation` tree), sort, keyword search, cursor pagination, results grid (thumbnail/name/creator/price + Limited badges). `searchCatalog`→`getItemDetails`→`multiGetAssetThumbnails` via React Query, `keepPreviousData` for smooth paging.
+- **Item details** (`app/catalog/[assetId]/[name]/page.tsx` + `_components/{CatalogDetail,BuyModal,Resellers,Recommendations,Comments}`): thumbnail, creator, description, genres, **buy flow** (`purchaseItem` w/ balance check + insufficient-funds/error states), reseller private-sales (buy from seller), favorite toggle, recommendations, comments (view + post). Places (assetType 9) redirect to the games route.
+- **Deferred** (noted, not blocking): sell/delist modals + sale-history chart + owners tab (owner-side management; overlaps Batch 4d item config), the place-406 `multiGetPlaceDetails` fallback, and the non-functional genre filter (legacy `searchCatalog` never sent a genre param).
+- Verified: Next build green, jest green, SSR smoke (`/catalog` + item route 200, no errors).
+
+---
+
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **4 — Core SPA routes** | Convert catalog, games, users/*, My/*, Trade, Groups, search, messages, places/update; migrate stores → React Query; replace JSS per route. (`/home` + `/develop` already done in Phase 2.) | XL |
+| **4 — Core SPA routes** | See the Phase 4 sub-batch table above (in progress). | XL |
 | **5 — Internal forms** | Migrate surviving `/internal/*` (create-place, place-update, report-abuse, membership, collectibles, age, updates) to `app/internal/*`. | M |
 | **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |
 | **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |
