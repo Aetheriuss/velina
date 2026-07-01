@@ -19,7 +19,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `d2726c9` | Phase 1: runtime config → env vars |
 | `c18b974` | Phase 2: low-risk routes + /home + /develop re-skin + Chat mount |
 | `0f5455a` | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
-| _(pending)_ | Phase 4a: catalog listing + item details (buy-side) |
+| `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
 
 ---
 
