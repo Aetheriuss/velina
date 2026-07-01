@@ -38,6 +38,9 @@ public class ApplicationGuardMiddleware
         "/auth/account-deletion",
         "/auth/signup",
         "/auth/ticket",
+        // Phase 5: public /internal/* pages migrated to Next need unauth allow in lockdown mode.
+        "/internal/updates",
+        "/internal/collectibles",
         // razor public
         "/UnsecuredContent",
         // gs

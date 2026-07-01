@@ -45,18 +45,14 @@ public class FrontendProxyMiddleware
         "/membership/notapproved.aspx",
         // Razor Public
         "/unsecuredcontent/",
-        // Razor - Internal
+        // Razor - Internal. Phase 5 migrated updates/age/report-abuse/membership/place-update/
+        // collectibles to the App Router (their mutations POST to /apisite/internal-forms/v1/*).
+        // create-place stays on .NET (its OnPost anti-abuse validation is intentionally not ported).
         "/internal/year",
-        "/internal/updates",
-        "/internal/age",
-        "/internal/report-abuse",
-        "/internal/membership",
         "/internal/dev",
         "/internal/faq",
         "/internal/donate",
-        "/internal/place-update",
         "/internal/create-place",
-        "/internal/collectibles",
         "/internal/contest/first-contest",
         "/auth/notapproved",
         // Admin

@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phases 5–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (39 App Router routes; legacy `pages/` down to 3: `/404`, `/User.aspx`, `/login`) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phases 6–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (45 App Router routes; legacy `pages/` still 3: `/404`, `/User.aspx`, `/login`) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -24,6 +24,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
 | `81084bb` | Phase 4d: My self-service (account/character/item/money/messages/ads) |
 | `915d8ad` | Phase 4e: groups/trade/places |
+| _(pending)_ | Phase 5: internal forms → App Router |
 
 ---
 
@@ -208,11 +209,33 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 
 ---
 
+## ✅ Phase 5 — Internal forms (complete & verified)
+
+Migrated the surviving `/internal/*` Razor forms to the App Router. Same principle as Phase 3 — UI on Next, security-sensitive mutations stay server-side.
+
+| Page | App Router | Backend |
+|------|-----------|---------|
+| **updates** | `app/internal/updates` | static (ported notice) |
+| **collectibles** | `app/internal/collectibles?userId=` | reuses `getCollectibleInventory` (existing endpoint); grid + RAP total (first 100) |
+| **place-update** | `app/internal/place-update?id=` | client redirect → `/places/[id]/update` (built in 4e) |
+| **membership** | `app/internal/membership` | new `GET/POST /apisite/internal-forms/v1/membership` |
+| **report-abuse** | `app/internal/report-abuse` | new `POST /apisite/internal-forms/v1/report-abuse` |
+| **age** | `app/internal/age` | new `GET/POST /apisite/internal-forms/v1/age` |
+
+**New .NET controller** `Controllers/v1/InternalForms.cs` — thin faithful wrappers (`GetUserMembership`/`InsertOrUpdateMembership`, `Is18Plus`/`MarkAs18Plus`, `abuseReport.InsertReport`) under `/apisite/internal-forms/v1`; CSRF via the standard challenge-retry (apiClient handles it).
+
+**Kept on .NET (bypassed):** `/internal/create-place` — its `OnPost` is ~200 lines of anti-abuse/anti-fraud validation (account age, place limits, visit/playtime/friends/spend heuristics, rejection cooldowns); re-deriving it is high-risk, so the battle-tested logic stays. The "Create New Game" link already points there. Also left as-is: `/internal/{year,dev,faq,donate,contest/first-contest}` (out of Phase 5 scope), and `Chat`.
+
+**Cutover:** removed the 6 migrated routes from `FrontendProxyMiddleware.BypassUrls` (kept `create-place`); added `/internal/{updates,collectibles}` to `ApplicationGuardMiddleware.allowedUrls` for unauth access in lockdown mode. Legacy CSRF-bypass entries for the migrated paths left as harmless dead entries.
+
+**Verified:** `.NET` + Next builds green; jest green; SSR smoke — all 6 app routes 200, updates content renders, no errors.
+
+---
+
 ## ⏳ Remaining phases
 
 | Phase | Scope | Size |
 |-------|-------|------|
-| **5 — Internal forms** | Migrate surviving `/internal/*` (create-place, place-update, report-abuse, membership, collectibles, age, updates) to `app/internal/*`. | M |
 | **6 — Admin port** | Port the Svelte admin (~34 pages) to `app/admin/*` (client components), reuse `/admin-api/api/*`; flip `/admin` out of BypassUrls. Also clean the deferred forum cosmetics. | XL |
 | **7 — Cleanup** | Delete Razor `Pages/Auth`+`Pages/Internal`, `_Layout.cshtml`, the admin bundle routes + `services/admin/`; prune BypassUrls; drop dead deps (jss, react-jss, bootstrap, unstated-next) and `theme.js`/`buttonStyles.js`/`_document.js`. | S–M |
 
