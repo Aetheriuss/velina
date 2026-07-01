@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phases 6–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (45 App Router routes; legacy `pages/` still 3: `/404`, `/User.aspx`, `/login`) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 ✅ · Phase 5 ✅ · Phase 6 🔄 (6a ✅; 6b–6d pending) · Phase 7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (48 App Router routes; legacy `pages/` still 3) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -25,6 +25,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `81084bb` | Phase 4d: My self-service (account/character/item/money/messages/ads) |
 | `915d8ad` | Phase 4e: groups/trade/places |
 | `027c5af` | Phase 5: internal forms → App Router |
+| _(pending)_ | Phase 6a: admin foundation (shell/nav/permissions/dashboard/players) |
 
 ---
 
@@ -229,6 +230,27 @@ Migrated the surviving `/internal/*` Razor forms to the App Router. Same princip
 **Cutover:** removed the 6 migrated routes from `FrontendProxyMiddleware.BypassUrls` (kept `create-place`); added `/internal/{updates,collectibles}` to `ApplicationGuardMiddleware.allowedUrls` for unauth access in lockdown mode. Legacy CSRF-bypass entries for the migrated paths left as harmless dead entries.
 
 **Verified:** `.NET` + Next builds green; jest green; SSR smoke — all 6 app routes 200, updates content renders, no errors.
+
+---
+
+## 🔄 Phase 6 — Admin port (in progress; sub-batches)
+
+Porting the Svelte admin SPA (`services/admin`, ~33 svelte-routing pages hitting `/admin-api/api/*`) to `app/admin/*`. `/admin` stays in `BypassUrls` (served by the Svelte bundle) until 6d flips it over, so the new routes build but aren't served yet.
+
+Foundation (6a): `lib/adminClient.ts` (fetch wrapper → `/admin-api/api/`, CSRF challenge-retry), `components/admin/AdminPermissionsProvider` (`GET /permissions` → `hasPermission`/`is`), `components/admin/AdminSideNav` (permission-gated nav), `app/admin/layout.tsx` (shell + access gate).
+
+| Batch | Pages | Status |
+|-------|-------|--------|
+| **6a — Foundation** | shell/nav/perms, dashboard, players, permissions(staff list) | ✅ |
+| **6b — User management** | manage-user + usernames/badges/robux/inventory/ban/message/transactions/moderation-history/trades/manage-user-asset/track-asset | ⏳ |
+| **6c — Assets & content mod** | asset approval/resolve/create/create-for-item/version/clothing, product update, re-render, text moderation, reports | ⏳ |
+| **6d — System/misc + cutover** | logs, memos, feature-flags, lottery, groups, game-history, create-player; flip `/admin` out of BypassUrls; forum cosmetics cleanup | ⏳ |
+
+### ✅ Batch 6a — Admin foundation
+- **Dashboard** (`app/admin/page.tsx`): stat cards (signups past hour/day, online/in-game expandable, pending assets), site-wide alert manager — all permission-gated.
+- **Players** (`app/admin/players`): search (sort/column/limit/query), table (dropped the dead Join App column — Phase R removed applications/invites), pagination, mass ban / name-reset with confirm.
+- **Permissions** (`app/admin/permissions`): staff list.
+- Verified: Next build green, jest green, SSR smoke (`/admin`, `/admin/players`, `/admin/permissions` 200; gate renders without a backend, no errors).
 
 ---
 
