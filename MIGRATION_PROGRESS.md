@@ -4,8 +4,8 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 
 - **Branch:** `feature/unified-nextjs-2020`
 - **Plan file:** `~/.claude/plans/create-a-plan-to-drifting-harp.md`
-- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a,4b,4c ✅; 4d,4e pending) · Phases 5–7 pending
-- **Build health:** `.NET` 0 errors · Next frontend builds (25 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
+- **Status:** Phase 0 ✅ · Phase R ✅ · Phase 1 ✅ · Phase 2 ✅ · Phase 3 ✅ · Phase 4 🔄 (4a–4d ✅; 4e pending) · Phases 5–7 pending
+- **Build health:** `.NET` 0 errors · Next frontend builds (32 App Router routes + legacy pages) · jest green · prod-server SSR smoke-tested
 
 ---
 
@@ -22,6 +22,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
 | `3fc6e40` | Phase 4b: games listing + game details |
 | `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
+| _(pending)_ | Phase 4d: My self-service (account/character/item/money/messages/ads) |
 
 ---
 
@@ -153,7 +154,7 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 | **4a — Catalog** | `/catalog`, `/catalog/[assetId]/[name]` | ✅ |
 | **4b — Games** | `/games`, `/games/[assetId]/[name]` | ✅ |
 | **4c — Users** | `/users/[userId]/{profile,friends,inventory,favorites}`, `/search/users` (`/User.aspx` kept as pages redirect) | ✅ |
-| **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ⏳ |
+| **4d — My (self-service)** | `/My/{Account,Character,Item,Money,Messages}`, `/messages/compose`, `/My/CreateUserAd` | ✅ |
 | **4e — Groups/Trade/Places** | `/My/{Groups,GroupAdmin,CreateGroup,Trades}`, `/Groups/Audit`, `/Trade/TradeWindow`, `/places/[placeId]/update` | ⏳ |
 
 ### ✅ Batch 4a — Catalog
@@ -177,6 +178,17 @@ Pattern (same as Phase 2): reuse the isomorphic `services/*` in React Query, re-
 - `/User.aspx` (`?ID=`→profile SSR redirect) intentionally **kept on the pages router** — pure redirect, no UI.
 - **Deferred** (noted): profile "currently wearing" outfit pagination dots, collections tab, relationship-statistics widget styling niceties, forum post count is display-only.
 - Verified: Next build green, jest green, SSR smoke (all 5 app routes 200, `/User.aspx` 307, no errors).
+
+### ✅ Batch 4d — My (self-service)
+- **Account** (`app/My/Account`): tabs Account Info (change username via `validateUsername`+`changeUsername`, change password, bio via `setUserDescription`), Security (`logoutFromAllOtherSessions`), Privacy (inventory/trade privacy + trade-value selectors). Flag-gated on `myAccountPage2016Enabled`.
+- **Character** (`app/My/Character.aspx`): avatar thumbnail (poll `multiGetUserThumbnails` until Completed), currently-wearing (`getMyAvatar`) with remove, wardrobe (`getInventory` by wearable category, wear/remove via `setWearingAssets`), outfits (`getOutfits`/`wearOutfit`/`createOutfit`/`deleteOutfit`), redraw.
+- **Item** (`app/My/Item.aspx`): configure form (name/description/sell+price w/ 30% fee, comments, genres) → `setAssetPrice` + `updateAsset`.
+- **Money** (`app/My/Money.aspx`): Transactions (type filter, cursor paging) + Summary (`getTransactionSummary`+`formatSummaryResponse`).
+- **Messages** (`app/My/Messages`): inbox/sent/notifications/archive tabs, read view (auto mark-read), reply (`sendMessage`), archive toggle, paging.
+- **Compose** (`app/messages/compose`): recipient + subject + body → `sendMessage`.
+- **CreateUserAd** (`app/My/CreateUserAd.aspx`): image + name → `uploadAdvertisement`.
+- **Deferred** (noted): the **currency-exchange market** (Trade Currency tab: positions/market-activity/order modal — large nested feature) and the **avatar color/body-part editor**; both are self-contained and can be a follow-up. `/My/Trades.aspx` item-trades stays for Batch 4e.
+- Verified: Next build green, jest green, SSR smoke (all 7 app routes 200, no errors).
 
 ---
 
