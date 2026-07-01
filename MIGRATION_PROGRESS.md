@@ -26,7 +26,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `915d8ad` | Phase 4e: groups/trade/places |
 | `027c5af` | Phase 5: internal forms → App Router |
 | `1dce0a5` | Phase 6a: admin foundation (shell/nav/permissions/dashboard/players) |
-| _(pending)_ | Phase 6b: admin user management (12 pages) |
+| `3324e7c` | Phase 6b: admin user management (12 pages) |
 
 ---
 
