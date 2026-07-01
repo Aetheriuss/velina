@@ -54,12 +54,6 @@ public class AdminApiController : ControllerBase
     private DistributedCache redis => Roblox.Services.Cache.distributed;
     private static readonly long startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
 
-    private static string? adminBundleJs { get; set; }
-    private static string? adminBundleCss { get; set; }
-    private static string? adminBundleHtml { get; set; }
-    private static readonly Mutex adminStaticMux = new();
-    private static readonly string adminRandomUrlPart = Guid.NewGuid().ToString();
-
     private bool IsLoggedIn()
     {
         return base.userSession != null;
@@ -75,66 +69,8 @@ public class AdminApiController : ControllerBase
         }
     }
 
-    [HttpGet("/admin/build-redirect/bundle.js")]
-    public IActionResult GetAdminBuildJs()
-    {
-        return new RedirectResult("/admin/build/" + adminRandomUrlPart + "/bundle.js");
-    }
-
-    [HttpGet("/admin/build/{part}/bundle.js")]
-    public async Task<IActionResult> GetAdminBundleJsReal()
-    {
-        if (!IsLoggedIn() || !await IsStaff(userSession.userId)) return Redirect("/home");
-#if DEBUG
-        if (true)
-#else
-        if (adminBundleJs == null)
-#endif
-        {
-            adminStaticMux.WaitOne();
-            adminBundleJs = System.IO.File.ReadAllText(Configuration.AdminBundleDirectory + "/build/bundle.js");
-            adminStaticMux.ReleaseMutex();
-        }
-        return Content(adminBundleJs, "application/javascript");
-    }
-
-    [HttpGet("/admin/build-redirect/bundle.css")]
-    public IActionResult GetAdminBundleCss()
-    {
-        return new RedirectResult("/admin/build/" + adminRandomUrlPart + "/bundle.css");
-    }
-
-    [HttpGet("/admin/build/{part}/bundle.css")]
-    public async Task<IActionResult> GetAdminBundleCssReal()
-    {
-        if (!IsLoggedIn() || !await IsStaff(userSession.userId)) return Redirect("/home");
-#if DEBUG
-        if (true)
-#else
-        if (adminBundleCss == null)
-#endif
-        {
-            adminStaticMux.WaitOne();
-            adminBundleCss = System.IO.File.ReadAllText(Configuration.AdminBundleDirectory + "/build/bundle.css");
-            adminStaticMux.ReleaseMutex();
-        }
-        return Content(adminBundleCss, "text/css");
-    }
-
-    // Wildcards are not easily supported... https://stackoverflow.com/questions/51973631/wildcard-in-route-attribute-for-webapi?rq=1
-    [HttpGet("/admin/"), HttpGet("/admin/{one}"), HttpGet("/admin/{one}/{two}"), HttpGet("/admin/{one}/{two}/{three}"), HttpGet("/admin/{one}/{two}/{three}/{four}"), HttpGet("/admin/{one}/{two}/{three}/{four}/{five}"), HttpGet("/admin/{one}/{two}/{three}/{four}/{five}/{six}")]
-    public async Task<IActionResult> GetAdminView()
-    {
-        if (!IsLoggedIn() || !await IsStaff(userSession.userId)) return Redirect("/home");
-        
-       if (adminBundleHtml == null)
-        {
-            adminStaticMux.WaitOne();
-            adminBundleHtml = System.IO.File.ReadAllText(Configuration.AdminBundleDirectory + "/index.html");
-            adminStaticMux.ReleaseMutex();
-        }
-        return Content(adminBundleHtml, "text/html");
-    }
+    // Phase 6/7: the Svelte admin bundle-serving routes (/admin/build/*, /admin/ HTML) were removed —
+    // /admin now proxies to the Next App Router admin. Only the JSON API below remains on .NET.
 
     [HttpGet("permissions")]
     public async Task<dynamic> GetPermissions()

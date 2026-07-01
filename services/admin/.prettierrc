@@ -1,6 +1,0 @@
-{
-    "printWidth": 900000,
-    "useTabs": true,
-    "tabWidth": 4,
-    "svelte.plugin.svelte.format.config.printWidth": 900
-}
