@@ -22,7 +22,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
 | `3fc6e40` | Phase 4b: games listing + game details |
 | `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
-| _(pending)_ | Phase 4d: My self-service (account/character/item/money/messages/ads) |
+| `81084bb` | Phase 4d: My self-service (account/character/item/money/messages/ads) |
 
 ---
 
