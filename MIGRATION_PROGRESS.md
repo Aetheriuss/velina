@@ -21,7 +21,7 @@ Migrating Velina's three-headed UI (Next.js `2016-roblox-main` + .NET Razor page
 | `0f5455a` | Phase 3: auth migration (Discord-only) — app/auth/* + JSON endpoints + BypassUrls split |
 | `d92efb6` | Phase 4a: catalog listing + item details (buy-side) |
 | `3fc6e40` | Phase 4b: games listing + game details |
-| _(pending)_ | Phase 4c: users (profile/friends/inventory/favorites/search) |
+| `b9bd25b` | Phase 4c: users (profile/friends/inventory/favorites/search) |
 
 ---
 
