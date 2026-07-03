@@ -39,6 +39,12 @@ setIfUnset('BACKEND_AUTHORIZATION', srv.authorization);
 setIfUnset('BACKEND_AUTHORIZATION_HEADER', srv.authorizationHeader);
 
 module.exports = {
+  // Standalone output: `next build` traces the server's actual imports and emits
+  // .next/standalone with a minimal node_modules (no dev toolchain). The Docker image
+  // ships only that, cutting it ~4-5x. NOTE: the standalone server.js does NOT re-run
+  // this file at startup, so the config.json -> env mapping above is replicated in
+  // docker-start.js for the container.
+  output: 'standalone',
   reactStrictMode: true,
   async redirects() {
     return [

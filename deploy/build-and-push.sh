@@ -37,8 +37,21 @@ echo
 echo "==> building"
 $COMPOSE build $BUILT_SERVICES
 
-echo "==> pushing"
-$COMPOSE push $BUILT_SERVICES
+# Push with retries: docker pushes layer-by-layer and a re-push skips layers the registry
+# already has, so on a flaky/slow uplink each attempt makes forward progress. Only a layer
+# that never completes within one attempt is lost.
+MAX_PUSH_ATTEMPTS="${MAX_PUSH_ATTEMPTS:-10}"
+echo "==> pushing (up to $MAX_PUSH_ATTEMPTS attempts; completed layers are not re-uploaded)"
+attempt=1
+until $COMPOSE push $BUILT_SERVICES; do
+  if [ "$attempt" -ge "$MAX_PUSH_ATTEMPTS" ]; then
+    echo "ERROR: push still failing after $MAX_PUSH_ATTEMPTS attempts." >&2
+    exit 1
+  fi
+  attempt=$((attempt + 1))
+  echo "push interrupted — retrying (attempt $attempt/$MAX_PUSH_ATTEMPTS) in 10s..."
+  sleep 10
+done
 
 echo
 echo "Done. On Unraid: docker compose -f docker-compose.prod.yml --env-file .env pull && ... up -d"
