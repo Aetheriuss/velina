@@ -3,14 +3,14 @@
 import React, { useState } from 'react';
 import { launchGame } from '../../../../../services/games';
 import { useAuth } from '../../../../../components/providers/AuthProvider';
-import getFlag from '../../../../../lib/getFlag';
 import Button from '../../../../../components/ui/Button';
 
 /**
  * Play button. Ports playButton.js: unauthenticated → login; otherwise launch via the join script
  * (launchGame hits /game/get-join-script and clicks the protocol URL). The legacy no-flag default
- * redirected to roblox.com, which is nonsensical for this clone — we default to the join-script
- * launch and honor launchUsingEsWeb for the web-client redirect.
+ * redirected to roblox.com, which is nonsensical for this clone — we always use the join-script
+ * launch. (The legacy launchUsingEsWeb branch pointed at /RobloxApp/Play, a route that has never
+ * existed here.)
  */
 export default function PlayButton({ placeId }: { placeId: number }) {
   const { isAuthenticated, isPending } = useAuth();
@@ -21,10 +21,6 @@ export default function PlayButton({ placeId }: { placeId: number }) {
     if (isPending) return;
     if (!isAuthenticated) {
       window.location.href = '/auth/login';
-      return;
-    }
-    if (getFlag('launchUsingEsWeb', false)) {
-      window.location.href = '/RobloxApp/Play?placeId=' + placeId;
       return;
     }
     setLaunching(true);

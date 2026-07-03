@@ -183,15 +183,6 @@ public class UsersService : ServiceBase, IService
             await db.ExecuteAsync("DELETE FROM user_conversation_message WHERE user_id = :id", new { id = userId });
             // chat read receipts
             await db.ExecuteAsync("DELETE FROM user_conversation_message_read WHERE user_id = :id", new { id = userId });
-            // forum threads
-            await db.ExecuteAsync(
-                "UPDATE forum_post SET title = '[ Content Deleted ]' WHERE user_id = :id AND thread_id IS NULL",
-                new { id = userId });
-            // forum posts
-            await db.ExecuteAsync("UPDATE forum_post SET post = '[ Content Deleted ]' WHERE user_id = :id", new
-            {
-                id = userId,
-            });
             // statuses
             await db.ExecuteAsync("DELETE FROM user_status WHERE user_id = :id", new { id = userId });
             // messages
@@ -211,11 +202,6 @@ public class UsersService : ServiceBase, IService
                 user_id = userId,
             });
             await db.ExecuteAsync("UPDATE group_status SET status = '[ Content Deleted ]' WHERE user_id = :user_id", new
-            {
-                user_id = userId,
-            });
-            // delete app
-            await db.ExecuteAsync("DELETE FROM join_application WHERE user_id = :user_id", new
             {
                 user_id = userId,
             });

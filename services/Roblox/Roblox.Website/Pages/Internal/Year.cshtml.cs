@@ -17,7 +17,7 @@ public class Year : RobloxPageModel
 
     public async Task<IActionResult> OnGet()
     {
-        if (session == null) return Redirect("/login");
+        if (session == null) return Redirect("/auth/login");
         var usersService = new UsersService();
         currentYear = await usersService.GetYear(session.userId);
 

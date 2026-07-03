@@ -24,6 +24,14 @@ public class ApplicationGuardMiddleware
     {
         "/auth/captcha",
         "/auth/discord",
+        // Discord OAuth entry + callback and the JSON endpoints behind the Next signup flow
+        // (choose-username page). Matching is exact, so each path is listed individually —
+        // without these, lockdown mode blocks all sign-ins.
+        "/auth/discord/login",
+        "/auth/discord/callback",
+        "/apisite/auth/v2/discord/pending",
+        "/apisite/auth/v2/discord/choose-username",
+        "/apisite/auth/v2/account-deletion",
         "/auth/submit",
         "/auth/home",
         "/auth/privacy",
@@ -41,8 +49,8 @@ public class ApplicationGuardMiddleware
         // Phase 5: public /internal/* pages migrated to Next need unauth allow in lockdown mode.
         "/internal/updates",
         "/internal/collectibles",
-        // razor public
-        "/UnsecuredContent",
+        // razor public (paths are compared lowercased)
+        "/unsecuredcontent",
         // gs
         "/gs/activity",
         "/gs/ping",
@@ -55,7 +63,6 @@ public class ApplicationGuardMiddleware
         "/game/validateticket.ashx",
         "/game/get-join-script-debug",
         "/api/moderation/filtertext"
-        // for forums or they don't work properly
     };
 
     public static void Configure(string authorizationString)

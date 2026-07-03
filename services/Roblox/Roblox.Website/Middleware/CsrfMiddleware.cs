@@ -128,23 +128,11 @@ public class CsrfMiddleware : ControllerServicesExtended
         "/gs/a",
         "/game/validateticket.ashx",
         "/api/moderation/filtertext",
-        // uses built-in RequestVerificationToken
-        "/auth",
-        "/auth/signup",
-        "/auth/discord",
-        "/auth/choose-username",
-        "/auth/credits",
+        // Remaining Razor pages with POST handlers; these use the built-in
+        // RequestVerificationToken instead of the rbxcsrf4 challenge.
         "/internal/year",
-        "/internal/report-abuse",
-        "/internal/age",
-        "/internal/membership",
-        "/internal/place-update",
-        "/internal/contest/first-contest",
-        "/auth/account-deletion",
-        "/auth/login",
-        // Staff break-glass login (relocated from /auth/login in Phase 3); uses RequestVerificationToken.
+        // Staff break-glass login (relocated from /auth/login in Phase 3).
         "/auth/break-glass",
-        "/auth/password-reset",
         "/auth/ticket",
         "/auth/captcha",
         "/internal/create-place",

@@ -36,7 +36,7 @@ const ctr = (clicks: number, impressions: number) =>
 
 const targetUrl = (t: Target) =>
   t.targetType === 'Group'
-    ? `/Groups/Group.aspx?gid=${t.targetId}`
+    ? `/My/Groups.aspx?gid=${t.targetId}`
     : getItemUrl({ assetId: t.targetId, name: t.targetName });
 
 function Stat({ name, value }: { name: string; value: string | number }) {

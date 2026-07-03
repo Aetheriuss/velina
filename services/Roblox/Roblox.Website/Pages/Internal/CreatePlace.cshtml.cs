@@ -24,7 +24,6 @@ public class CreatePlace : RobloxPageModel
         Ok = 1,
         AccountTooNew,
         TooManyPlaces,
-        NoApplication,
         TooInactive,
         LatestPlaceCreatedTooRecently,
         NotEnoughVisitsForNewPlace,
@@ -216,7 +215,7 @@ public class CreatePlace : RobloxPageModel
             return PlaceCreationFailureReason.TooInactive;
         }
 
-        if (!await IsActiveEnoughForPlace(userId))
+        if (await IsActiveEnoughForPlace(userId))
         {
             log.Info("user is active enough for a place. return OK");
             return PlaceCreationFailureReason.Ok;
@@ -234,8 +233,7 @@ public class CreatePlace : RobloxPageModel
             PlaceCreationFailureReason.AccountTooNew =>
                 "Your account is too new. Try again when your account is at least 7 days old.",
             PlaceCreationFailureReason.TooManyPlaces => "Your account already has the maximum amount of places on it.",
-            PlaceCreationFailureReason.NoApplication => "You cannot create a place if you did not join through the application system.",
-            PlaceCreationFailureReason.TooInactive => "Your account is too inactive to create a place. Staff cannot comment on the exact reason, so please do not ask. Try playing around some more, posting on places like the forums, joining groups, buying items, then try again in a few days.",
+            PlaceCreationFailureReason.TooInactive => "Your account is too inactive to create a place. Staff cannot comment on the exact reason, so please do not ask. Try playing around some more, joining groups, buying items, then try again in a few days.",
             PlaceCreationFailureReason.LatestPlaceCreatedTooRecently => "Latest place was created too recently. Try again in a day.",
             PlaceCreationFailureReason.NotEnoughVisitsForNewPlace => "You do not have enough visits to create a new place. Try again in a few days.",
             _ => "Unknown reason. Code = " + reason.ToString(),

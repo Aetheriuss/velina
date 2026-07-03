@@ -463,6 +463,20 @@ namespace Roblox.Website.Controllers
             return new MVC.RedirectResult("/");
         }
 
+        // Registration is Discord-only; these legacy pages were deleted in the App Router
+        // migration but FrontendProxyMiddleware still routes both paths to .NET.
+        [HttpGet("/auth/signup")]
+        public MVC.RedirectResult SignupRedirect()
+        {
+            return new MVC.RedirectResult("/auth/discord/login");
+        }
+
+        [HttpGet("/auth/password-reset")]
+        public MVC.RedirectResult PasswordResetRedirect()
+        {
+            return new MVC.RedirectResult("/auth/discord/login");
+        }
+
         [HttpGetBypass("placelauncher.ashx")]
         [MVC.HttpPost("placelauncher.ashx")]
         public async Task<dynamic> LaunchGame([Required, MVC.FromQuery] string ticket)
@@ -886,7 +900,7 @@ namespace Roblox.Website.Controllers
             return new MVC.RedirectResult("/internal/membership");
         }
 
-        [HttpGetBypass("abusereport/UserProfile"), HttpGetBypass("abusereport/asset"), HttpGetBypass("abusereport/user"), HttpGetBypass("abusereport/users")]
+        [HttpGetBypass("abusereport/UserProfile"), HttpGetBypass("abusereport/asset"), HttpGetBypass("abusereport/user"), HttpGetBypass("abusereport/users"), HttpGetBypass("abusereport/Feed")]
         public MVC.IActionResult ReportAbuseRedirect()
         {
             return new MVC.RedirectResult("/internal/report-abuse");

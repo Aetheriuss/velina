@@ -33,8 +33,6 @@ public class Login : RobloxPageModel
     public string? password { get; set; }
     [FromForm(Name = "h-captcha-response")]
     public string? hCaptchaResponse { get; set; }
-    [BindProperty(SupportsGet = true)]
-    public string? applicationId { get; set; }
     public string? errorMessage { get; set; }
     public string siteKey => Configuration.HCaptchaPublicKey;
     public void OnGet()
