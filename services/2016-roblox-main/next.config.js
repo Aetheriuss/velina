@@ -46,6 +46,14 @@ module.exports = {
   // docker-start.js for the container.
   output: 'standalone',
   reactStrictMode: true,
+  // Don't fail the production build on lint. Before .eslintrc.json existed the repo
+  // had no ESLint config, so `next build` skipped linting entirely; adding the config
+  // (so `npm run lint` works) turned on lint-during-build and surfaced pre-existing
+  // errors in legacy files (chat/, lib/getQueryParams.js) that break the Docker build.
+  // Lint is still available as a separate `npm run lint` gate; typecheck still runs here.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async redirects() {
     return [
       {
