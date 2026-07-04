@@ -79,7 +79,7 @@ export default function ChooseUsernamePage() {
           value={username}
           autoFocus
           onChange={(e) => setUsername(e.target.value)}
-          className="rounded-rbx border border-border bg-surface px-3 py-2"
+          className="h-9 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
         />
         <input
           type="password"
@@ -87,7 +87,7 @@ export default function ChooseUsernamePage() {
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-rbx border border-border bg-surface px-3 py-2"
+          className="h-9 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
         />
         <small className="mb-2 text-text-muted">
           Optional. Set a password to also sign in with username + password; leave blank to use

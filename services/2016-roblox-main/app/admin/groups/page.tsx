@@ -44,7 +44,7 @@ export default function AdminGroupsPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2 text-sm';
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Groups</h1>
+      <h1 className="text-2xl font-semibold">Groups</h1>
       <Card className="flex flex-wrap items-end gap-2">
         <label className="flex flex-col text-xs text-text-muted">By ID<input className={input} value={byId} onChange={(e) => setById(e.target.value)} /></label>
         <Button size="sm" disabled={!byId} onClick={() => setSelected({ kind: 'id', value: byId })}>Find</Button>

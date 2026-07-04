@@ -40,7 +40,7 @@ export default function AssetApprovalPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">Asset Moderation ({items.length})</h1>
+        <h1 className="text-2xl font-semibold">Asset Moderation ({items.length})</h1>
         <Button size="sm" variant="secondary" onClick={() => { setDone(new Set()); refetch(); }}>Refresh</Button>
       </div>
       {isFetching && items.length === 0 ? <p className="text-text-muted">Loading…</p> : items.length === 0 ? <p className="text-text-muted">Queue is empty.</p> : (

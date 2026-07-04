@@ -55,7 +55,7 @@ function GroupInner() {
   const refreshWall = () => queryClient.invalidateQueries({ queryKey: wallKey });
 
   if (!groupId) return <p className="text-text-muted">No group specified.</p>;
-  if (error) return <div className="py-10 text-center"><h1 className="text-xl font-bold">Group not found</h1></div>;
+  if (error) return <div className="py-10 text-center"><h1 className="text-2xl font-semibold">Group not found</h1></div>;
   if (!info) return <p className="text-text-muted">Loading…</p>;
 
   return (
@@ -68,7 +68,7 @@ function GroupInner() {
           ) : null}
         </div>
         <div className="flex-1">
-          <h1 className="text-3xl font-black">{info.name}</h1>
+          <h1 className="text-2xl font-semibold">{info.name}</h1>
           <p className="text-sm text-text-muted">
             Owner: {info.owner ? <a href={`/users/${info.owner.userId}/profile`} className="text-accent hover:underline">{info.owner.username}</a> : 'None'} · {(info.memberCount ?? 0).toLocaleString()} members
           </p>
@@ -89,11 +89,11 @@ function GroupInner() {
       ) : null}
 
       {info.description ? (
-        <section><h2 className="mb-1 text-xl font-light">About</h2><p className="whitespace-pre-wrap">{info.description}</p></section>
+        <section><h2 className="mb-1 text-lg font-semibold">About</h2><p className="whitespace-pre-wrap">{info.description}</p></section>
       ) : null}
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Wall</h2>
+        <h2 className="mb-2 text-lg font-semibold">Wall</h2>
         {isMember ? (
           <Card className="mb-3 flex flex-col gap-2">
             <textarea value={wallText} onChange={(e) => setWallText(e.target.value)} rows={2} placeholder="Post to the group wall…" className="rounded-rbx border border-border bg-surface px-3 py-2 text-sm" />
@@ -113,7 +113,7 @@ function GroupInner() {
                   <p className="mt-1 whitespace-pre-wrap">{post.body}</p>
                 </div>
                 {isMember ? (
-                  <button type="button" onClick={async () => { await deletePost({ groupId, postId: post.id }); refreshWall(); }} className="shrink-0 text-sm text-negative hover:underline">Delete</button>
+                  <Button size="sm" variant="ghost" className="shrink-0 !text-negative hover:!bg-negative/10" onClick={async () => { await deletePost({ groupId, postId: post.id }); refreshWall(); }}>Delete</Button>
                 ) : null}
               </Card>
             );
@@ -122,7 +122,7 @@ function GroupInner() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Members</h2>
+        <h2 className="mb-2 text-lg font-semibold">Members</h2>
         <div className="flex flex-wrap gap-3">
           {(members?.rows || []).map((m) => (
             <a key={m.user.userId} href={`/users/${m.user.userId}/profile`} className="flex w-[72px] flex-col items-center gap-1">

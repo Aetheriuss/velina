@@ -22,7 +22,7 @@ export default function ResolveUrlPage() {
 
   return (
     <div className="mx-auto max-w-xl flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Resolve URL</h1>
+      <h1 className="text-2xl font-semibold">Resolve URL</h1>
       <Card className="flex gap-2">
         <input className="flex-1 rounded-rbx border border-border bg-surface px-3 py-2" placeholder="Thumbnail / asset URL" value={url} onChange={(e) => setUrl(e.target.value)} />
         <Button size="sm" disabled={busy || !url} onClick={lookup}>Lookup</Button>

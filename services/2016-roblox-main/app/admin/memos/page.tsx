@@ -14,7 +14,7 @@ export default function MemosPage() {
   const visible = MEMOS.filter((m) => is(m.group));
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Memos</h1>
+      <h1 className="text-2xl font-semibold">Memos</h1>
       {visible.length === 0 ? <p className="text-text-muted">No memos for you.</p> : (
         <div className="flex flex-col gap-2">
           {visible.map((m, i) => (

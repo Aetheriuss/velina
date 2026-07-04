@@ -51,7 +51,7 @@ export default function ManageUserPage() {
           <img src={user.thumbnail_url || `/Thumbs/Avatar.ashx?height=420&width=420&userid=${user.id}`} alt={user.username} className="h-full w-full object-cover" />
         </div>
         <div>
-          <h1 className="text-3xl font-black">{user.username}</h1>
+          <h1 className="text-2xl font-semibold">{user.username}</h1>
           <p className="text-sm text-text-muted">
             ID {user.id}
             {user.is_admin ? ' · Admin' : user.is_moderator ? ' · Moderator' : ''}
@@ -79,7 +79,7 @@ export default function ManageUserPage() {
       ) : null}
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Actions</h2>
+        <h2 className="mb-2 text-lg font-semibold">Actions</h2>
         <div className="flex flex-wrap gap-2">
           {linkBtn('Ban', `/admin/ban-user/${userId}`, 'BanUser')}
           {hasPermission('UnbanUser') ? <Button size="sm" variant="secondary" onClick={() => action('/unban', { confirm: 'Unban this user?' })}>Unban</Button> : null}
@@ -93,7 +93,7 @@ export default function ManageUserPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Manage</h2>
+        <h2 className="mb-2 text-lg font-semibold">Manage</h2>
         <div className="flex flex-wrap gap-2">
           {linkBtn('Currency', `/admin/manage-robux-user/${userId}`, 'GiveUserRobux')}
           {linkBtn('Transactions', `/admin/user-transactions/${userId}`, 'GetUserTransactions')}
@@ -107,7 +107,7 @@ export default function ManageUserPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Avatar</h2>
+        <h2 className="mb-2 text-lg font-semibold">Avatar</h2>
         <div className="flex flex-wrap gap-2">
           {hasPermission('CreateGameForUser') ? <Button size="sm" variant="secondary" onClick={() => action('/create-game', { then: (r) => { const p = (r as { placeId?: number })?.placeId; if (p) router.push(`/games/${p}/--`); } })}>Create Game</Button> : null}
           {hasPermission('RegenerateAvatar') ? <Button size="sm" variant="secondary" onClick={() => action('/user/regenerate-avatar')}>Regenerate Avatar</Button> : null}
@@ -116,13 +116,13 @@ export default function ManageUserPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Text Content</h2>
+        <h2 className="mb-2 text-lg font-semibold">Text Content</h2>
         <Card><ManageTextContent userId={userId} /></Card>
       </section>
 
       {is('owner') ? (
         <section>
-          <h2 className="mb-2 text-xl font-light">Staff Permissions</h2>
+          <h2 className="mb-2 text-lg font-semibold">Staff Permissions</h2>
           <Card><ManagePermissions userId={userId} /></Card>
         </section>
       ) : null}

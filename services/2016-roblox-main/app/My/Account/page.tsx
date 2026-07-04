@@ -78,11 +78,11 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">My Account</h1>
+    <div className="flex max-w-2xl flex-col gap-4">
+      <h1 className="text-2xl font-semibold">My Account</h1>
       <div className="flex gap-2">
         {(['Account Info', 'Security', 'Privacy'] as Tab[]).map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+          <button key={t} type="button" onClick={() => setTab(t)} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
         ))}
       </div>
 

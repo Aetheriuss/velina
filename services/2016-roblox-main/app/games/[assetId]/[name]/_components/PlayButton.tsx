@@ -36,7 +36,7 @@ export default function PlayButton({ placeId }: { placeId: number }) {
 
   return (
     <div>
-      <Button className="w-full" onClick={play} disabled={launching}>
+      <Button variant="positive" size="lg" className="w-full" onClick={play} disabled={launching}>
         {launching ? 'Launching…' : '▶ Play'}
       </Button>
       {error ? <p className="mt-1 text-sm text-negative">{error}</p> : null}

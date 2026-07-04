@@ -99,7 +99,7 @@ export default function CharacterPage() {
       <div className="min-w-0">
         <div className="mb-3 flex gap-2">
           {(['Wardrobe', 'Outfits'] as const).map((t) => (
-            <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+            <button key={t} type="button" onClick={() => setTab(t)} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
           ))}
         </div>
 
@@ -107,7 +107,7 @@ export default function CharacterPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-[140px_1fr]">
             <nav className="flex flex-row flex-wrap gap-1 md:flex-col">
               {WARDROBE.map((c) => (
-                <button key={c.value} type="button" onClick={() => { setCategory(c); setCursor(''); }} className={`rounded-rbx px-2 py-1 text-left text-sm ${c.value === category.value ? 'bg-accent/10 font-semibold text-accent' : 'hover:bg-surface-alt'}`}>{c.name}</button>
+                <button key={c.value} type="button" onClick={() => { setCategory(c); setCursor(''); }} className={`rounded-rbx px-2 py-1.5 text-left text-sm ${c.value === category.value ? 'bg-sidebar-active font-semibold text-accent' : 'text-text hover:bg-sidebar-hover'}`}>{c.name}</button>
               ))}
             </nav>
             <div className="min-w-0">
@@ -134,8 +134,8 @@ export default function CharacterPage() {
                 </div>
               )}
               <div className="mt-4 flex justify-center gap-3">
-                <button type="button" disabled={!inv?.previousPageCursor} onClick={() => inv?.previousPageCursor && setCursor(inv.previousPageCursor)} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Previous</button>
-                <button type="button" disabled={!inv?.nextPageCursor || invItems.length === 0} onClick={() => inv?.nextPageCursor && setCursor(inv.nextPageCursor)} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Next</button>
+                <button type="button" disabled={!inv?.previousPageCursor} onClick={() => inv?.previousPageCursor && setCursor(inv.previousPageCursor)} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Previous</button>
+                <button type="button" disabled={!inv?.nextPageCursor || invItems.length === 0} onClick={() => inv?.nextPageCursor && setCursor(inv.nextPageCursor)} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Next</button>
               </div>
             </div>
           </div>

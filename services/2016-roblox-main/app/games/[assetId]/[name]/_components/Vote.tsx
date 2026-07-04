@@ -55,8 +55,8 @@ export default function Vote({ universeId }: { universeId: number }) {
         </button>
       </div>
       {pct !== null ? (
-        <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-negative/40">
-          <div className="h-full bg-positive" style={{ width: `${pct}%` }} />
+        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-negative">
+          <div className="h-full rounded-full bg-positive" style={{ width: `${pct}%` }} />
         </div>
       ) : null}
       {error ? <p className="mt-1 text-xs text-negative">{error}</p> : null}

@@ -30,7 +30,7 @@ export default function LogsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Moderation Logs</h1>
+      <h1 className="text-2xl font-semibold">Moderation Logs</h1>
       <select value={logType} onChange={(e) => { setLogType(e.target.value); setOffset(0); }} className="w-40 rounded-rbx border border-border bg-surface px-2 py-1.5 text-sm">
         {LOG_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
       </select>

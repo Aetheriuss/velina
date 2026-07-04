@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/providers/AuthProvider';
 import Button from '../components/ui/Button';
+import Spinner from '../components/ui/Spinner';
 
 /**
  * Root route. Mirrors the legacy pages/index.js behavior: authenticated users
@@ -22,8 +23,9 @@ export default function HomeRedirectPage() {
     if (isAuthenticated) router.replace('/home');
   }, [isAuthenticated, router]);
 
-  // Don't flash the landing while auth resolves, or while redirecting.
-  if (isPending || isAuthenticated) return null;
+  // Don't flash the landing while auth resolves, or while redirecting — but
+  // never render a fully blank page (a hung auth check should look like loading).
+  if (isPending || isAuthenticated) return <Spinner />;
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 py-16 text-center">

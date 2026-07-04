@@ -67,7 +67,7 @@ export default function ProfileActions({ userId }: { userId: number }) {
         {isFollowing ? 'Unfollow' : 'Follow'}
       </Button>
       <a href={`/messages/compose?userId=${userId}`}>
-        <Button size="sm" variant="ghost">Message</Button>
+        <Button size="sm" variant="secondary">Message</Button>
       </a>
     </div>
   );

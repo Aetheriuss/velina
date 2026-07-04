@@ -38,8 +38,8 @@ function TradeDetail({ tradeId, tab, onAction }: { tradeId: number; tab: Tab; on
       ))}
       {tab === 'Inbound' ? (
         <div className="flex gap-2">
-          <Button size="sm" disabled={busy} onClick={async () => { setBusy(true); try { await acceptTrade({ tradeId }); onAction(); } finally { setBusy(false); } }}>Accept</Button>
-          <Button size="sm" variant="ghost" disabled={busy} onClick={async () => { setBusy(true); try { await declineTrade({ tradeId }); onAction(); } finally { setBusy(false); } }}>Decline</Button>
+          <Button size="sm" variant="positive" disabled={busy} onClick={async () => { setBusy(true); try { await acceptTrade({ tradeId }); onAction(); } finally { setBusy(false); } }}>Accept</Button>
+          <Button size="sm" variant="secondary" className="!border-negative !text-negative hover:!bg-negative/10" disabled={busy} onClick={async () => { setBusy(true); try { await declineTrade({ tradeId }); onAction(); } finally { setBusy(false); } }}>Decline</Button>
         </div>
       ) : null}
     </div>
@@ -69,11 +69,11 @@ export default function TradesPage() {
   const refresh = () => { setOpen(null); queryClient.invalidateQueries({ queryKey: ['my-trades', tab] }); };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Trades</h1>
+    <div className="flex max-w-3xl flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Trades</h1>
       <div className="flex flex-wrap gap-2">
         {(['Inbound', 'Outbound', 'Completed', 'Inactive'] as Tab[]).map((t) => (
-          <button key={t} type="button" onClick={() => { setTab(t); setOpen(null); }} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+          <button key={t} type="button" onClick={() => { setTab(t); setOpen(null); }} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
         ))}
       </div>
 

@@ -7,7 +7,6 @@ import { getGameSorts, getGameList, getGameUrl } from '../../../services/games';
 import { multiGetUniverseIcons } from '../../../services/thumbnails';
 import { buildThumbMap } from '../../../lib/thumbnailMap';
 import { abbreviateNumber } from '../../../lib/numberUtils';
-import Card from '../../../components/ui/Card';
 
 interface Game {
   placeId: number;
@@ -54,27 +53,29 @@ function GameCard({ game, iconUrl }: { game: Game; iconUrl?: string }) {
   return (
     <Link
       href={getGameUrl({ placeId: game.placeId, name: game.name })}
-      className="block w-[150px] shrink-0"
+      className="group block w-[150px] shrink-0"
     >
-      <Card flush className="overflow-hidden transition-transform hover:-translate-y-0.5">
-        <div className="aspect-square w-full bg-surface-alt">
+      <div className="overflow-hidden rounded-rbx border border-border bg-surface shadow-rbx transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-rbx-hover">
+        <div className="aspect-square w-full overflow-hidden rounded-t-rbx bg-surface-alt">
           {iconUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={iconUrl} alt={game.name} className="h-full w-full object-cover" />
           ) : null}
         </div>
         <div className="p-2">
-          <p className="truncate text-sm font-medium" title={game.name}>
+          <p className="line-clamp-2 text-sm font-semibold leading-tight text-text" title={game.name}>
             {game.name}
           </p>
-          <p className="text-xs text-text-muted">{abbreviateNumber(game.playerCount)} playing</p>
-          {likePct !== null ? (
-            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-negative/40">
-              <div className="h-full bg-positive" style={{ width: `${likePct}%` }} />
-            </div>
-          ) : null}
+          <div className="mt-1 flex items-center justify-between text-xs text-text-muted">
+            {likePct !== null ? (
+              <span className="font-semibold text-positive">{likePct}%</span>
+            ) : (
+              <span />
+            )}
+            <span>{abbreviateNumber(game.playerCount)} playing</span>
+          </div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
@@ -87,7 +88,24 @@ export default function GameRows() {
   });
 
   if (isLoading) {
-    return <Card className="animate-pulse text-text-muted">Loading games…</Card>;
+    return (
+      <div className="flex flex-col gap-6">
+        {Array.from({ length: 2 }, (_, row) => (
+          <section key={row}>
+            <div className="mb-2 h-6 w-40 animate-pulse rounded-rbx bg-surface-alt" />
+            <div className="flex gap-3 overflow-hidden pb-2">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="w-[150px] shrink-0">
+                  <div className="aspect-square w-full animate-pulse rounded-rbx bg-surface-alt" />
+                  <div className="mt-2 h-4 w-3/4 animate-pulse rounded-rbx bg-surface-alt" />
+                  <div className="mt-1 h-3 w-1/2 animate-pulse rounded-rbx bg-surface-alt" />
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    );
   }
   if (!data || data.sorts.length === 0) return null;
 
@@ -96,8 +114,13 @@ export default function GameRows() {
       {data.sorts.map((sort) =>
         sort.games.length === 0 ? null : (
           <section key={sort.displayName}>
-            <h2 className="mb-2 text-xl font-light uppercase">{sort.displayName}</h2>
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-text">{sort.displayName}</h2>
+              <Link href="/games" className="text-sm text-accent hover:underline">
+                See All
+              </Link>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]">
               {sort.games.map((g) => (
                 <GameCard key={g.placeId} game={g} iconUrl={data.icons[g.universeId]} />
               ))}

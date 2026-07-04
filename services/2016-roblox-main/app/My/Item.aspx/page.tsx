@@ -70,8 +70,8 @@ function ConfigureInner() {
   const fee = isForSale ? Math.max(1, Math.floor((parseInt(price, 10) || 0) * 0.3)) : 0;
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Configure Item</h1>
+    <div className="flex max-w-2xl flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Configure Item</h1>
       <Card className="flex flex-col gap-3">
         <label className="text-sm text-text-muted">Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-rbx border border-border bg-surface px-3 py-2" />

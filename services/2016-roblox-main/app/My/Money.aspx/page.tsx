@@ -36,7 +36,7 @@ function Transactions({ userId }: { userId: number }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <select value={type} onChange={(e) => { setType(e.target.value); setCursors(['']); }} className="w-56 rounded-rbx border border-border bg-surface px-2 py-1.5 text-sm">
+      <select value={type} onChange={(e) => { setType(e.target.value); setCursors(['']); }} className="h-9 w-56 rounded-rbx border border-border bg-surface px-2 text-sm">
         {TX_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
       </select>
 
@@ -45,30 +45,30 @@ function Transactions({ userId }: { userId: number }) {
       ) : rows.length === 0 ? (
         <p className="text-text-muted">No transactions.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <Card flush className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left text-text-muted">
               <tr className="border-b border-border">
-                <th className="py-2">Date</th><th>Member</th><th>Description</th><th className="text-right">Amount</th>
+                <th className="px-4 py-2 font-semibold">Date</th><th className="font-semibold">Member</th><th className="font-semibold">Description</th><th className="px-4 text-right font-semibold">Amount</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((t) => (
-                <tr key={t.id} className="border-b border-border">
-                  <td className="py-2">{dayjs(t.created).format('M/D/YY')}</td>
+                <tr key={t.id} className="border-b border-border last:border-0 even:bg-surface-alt">
+                  <td className="px-4 py-2">{dayjs(t.created).format('M/D/YY')}</td>
                   <td>{t.agent ? <a href={`/users/${t.agent.id}/profile`} className="text-accent hover:underline">{t.agent.name}</a> : '—'}</td>
                   <td>{t.transactionType} {t.details?.name ? `· ${t.details.name}` : ''}</td>
-                  <td className="text-right font-medium">{t.currency ? `${t.currency.type === 2 ? 'Tx' : 'R$'} ${t.currency.amount.toLocaleString()}` : '—'}</td>
+                  <td className={`px-4 text-right font-semibold ${t.transactionType === 'Purchase' ? 'text-negative' : 'text-positive'}`}>{t.currency ? `${t.currency.type === 2 ? 'Tx' : 'R$'} ${t.currency.amount.toLocaleString()}` : '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        </Card>
       )}
 
       <div className="flex justify-center gap-3">
-        <button type="button" disabled={cursors.length <= 1 || isFetching} onClick={() => setCursors((c) => c.slice(0, -1))} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Previous</button>
-        <button type="button" disabled={!data?.next || isFetching} onClick={() => data?.next && setCursors((c) => [...c, data.next as string])} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Next</button>
+        <button type="button" disabled={cursors.length <= 1 || isFetching} onClick={() => setCursors((c) => c.slice(0, -1))} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Previous</button>
+        <button type="button" disabled={!data?.next || isFetching} onClick={() => data?.next && setCursors((c) => [...c, data.next as string])} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Next</button>
       </div>
     </div>
   );
@@ -85,7 +85,7 @@ function Summary({ userId }: { userId: number }) {
   });
   return (
     <div className="flex flex-col gap-3">
-      <select value={period} onChange={(e) => setPeriod(e.target.value)} className="w-40 rounded-rbx border border-border bg-surface px-2 py-1.5 text-sm">
+      <select value={period} onChange={(e) => setPeriod(e.target.value)} className="h-9 w-40 rounded-rbx border border-border bg-surface px-2 text-sm">
         {PERIODS.map((p) => <option key={p} value={p}>{p}</option>)}
       </select>
       <Card>
@@ -111,11 +111,11 @@ export default function MoneyPage() {
   if (!isAuthenticated || !userId) return <p className="text-center text-text-muted">Please sign in to view your money.</p>;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      <h1 className="text-3xl font-black">My Transactions</h1>
+    <div className="flex max-w-3xl flex-col gap-4">
+      <h1 className="text-2xl font-semibold">My Transactions</h1>
       <div className="flex gap-2">
         {(['Transactions', 'Summary'] as Tab[]).map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+          <button key={t} type="button" onClick={() => setTab(t)} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
         ))}
       </div>
       {tab === 'Transactions' ? <Transactions userId={userId} /> : <Summary userId={userId} />}

@@ -26,7 +26,7 @@ export default function LotteryPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">Lottery</h1>
+        <h1 className="text-2xl font-semibold">Lottery</h1>
         <Button size="sm" disabled={items.length === 0} onClick={run}>Run Lottery</Button>
       </div>
       {msg ? <p className="text-sm text-positive">{msg}</p> : null}

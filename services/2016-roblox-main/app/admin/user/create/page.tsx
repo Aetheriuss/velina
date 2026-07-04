@@ -30,7 +30,7 @@ export default function CreatePlayerPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-4 text-3xl font-black">Create Player</h1>
+      <h1 className="mb-4 text-2xl font-semibold">Create Player</h1>
       <Card className="flex flex-col gap-2">
         <label className="text-sm text-text-muted">User ID (blank = any)</label>
         <input className={input} value={userId} onChange={(e) => setUserId(e.target.value)} />

@@ -23,7 +23,7 @@ export default function AbuseReportsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Abuse Reports</h1>
+      <h1 className="text-2xl font-semibold">Abuse Reports</h1>
       <select className={`${sel} w-40`} value={mode} onChange={(e) => { setMode(e.target.value); setOffset(0); }}>
         {['Pending', 'Valid', 'InvalidGood', 'InvalidBad'].map((m) => <option key={m} value={m}>{m}</option>)}
       </select>

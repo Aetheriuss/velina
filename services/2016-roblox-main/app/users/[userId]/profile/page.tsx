@@ -26,13 +26,22 @@ const MEMBERSHIP: Record<number, string> = { 1: 'Builders Club', 2: 'Turbo BC', 
 
 function Section({ title, href, children }: { title: string; href?: string; children: React.ReactNode }) {
   return (
-    <section>
-      <div className="mb-2 flex items-baseline justify-between">
-        <h2 className="text-xl font-light">{title}</h2>
+    <Card>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">{title}</h2>
         {href ? <a href={href} className="text-sm text-accent hover:underline">See All</a> : null}
       </div>
       {children}
-    </section>
+    </Card>
+  );
+}
+
+function StatTile({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center rounded-rbx border border-border bg-surface p-4">
+      <span className="text-2xl font-semibold text-text">{value.toLocaleString()}</span>
+      <span className="text-xs uppercase tracking-wide text-text-muted">{label}</span>
+    </div>
   );
 }
 
@@ -72,8 +81,8 @@ export default function ProfilePage() {
   const { data: gameIcons } = useQuery({ queryKey: ['pf-game-icons', gameUniverseIds], queryFn: () => multiGetUniverseIcons({ universeIds: gameUniverseIds, size: '150x150' }), enabled: gameUniverseIds.length > 0 });
 
   if (isLoading) return <p className="text-text-muted">Loading…</p>;
-  if (error || !userInfo) return <div className="py-10 text-center"><h1 className="text-xl font-bold">User not found</h1></div>;
-  if (userInfo.isBanned) return <div className="py-10 text-center"><h1 className="text-2xl font-bold">Account Unavailable</h1><p className="mt-2 text-text-muted">This account has been banned.</p></div>;
+  if (error || !userInfo) return <Card className="py-10 text-center"><h1 className="text-2xl font-semibold">User not found</h1></Card>;
+  if (userInfo.isBanned) return <Card className="py-10 text-center"><h1 className="text-2xl font-semibold">Account Unavailable</h1><p className="mt-2 text-text-muted">This account has been banned.</p></Card>;
 
   const headUrl = buildThumbMap(heads)[userId];
   const p = (presence as Array<{ userPresenceType: string; lastLocation?: string }>)?.[0];
@@ -86,28 +95,34 @@ export default function ProfilePage() {
   const previousNames: string[] = (prevNames || []).map((v: string | { name: string }) => (typeof v === 'string' ? v : v.name));
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt shadow-rbx">
-          {headUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={headUrl} alt={userInfo.name} className="h-full w-full object-cover" />
-          ) : null}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">{userInfo.displayName || userInfo.name}</h1>
-            <span className={`h-3 w-3 rounded-full ${online ? 'bg-positive' : 'bg-text-muted/40'}`} title={online ? p?.lastLocation || 'Online' : 'Offline'} />
+    <div className="flex flex-col gap-4">
+      <Card>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-[auto_1fr] sm:items-center">
+          <div className="h-40 w-40 shrink-0 overflow-hidden rounded-rbx border border-border bg-surface-alt">
+            {headUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={headUrl} alt={userInfo.name} className="h-full w-full object-cover" />
+            ) : null}
           </div>
-          <p className="text-text-muted">@{userInfo.name}{membershipLabel ? ` · ${membershipLabel}` : ''}</p>
-          <p className="mt-1 text-sm text-text-muted">
-            {(friends?.length ?? 0).toLocaleString()} Friends · {(followers ?? 0).toLocaleString()} Followers · {(followings ?? 0).toLocaleString()} Following
-          </p>
-          <div className="mt-3">
-            <ProfileActions userId={userId} />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-semibold text-text">{userInfo.displayName || userInfo.name}</h1>
+            <p className="text-sm text-text-muted">@{userInfo.name}{membershipLabel ? ` · ${membershipLabel}` : ''}</p>
+            <p className="mt-2 flex items-center gap-2 text-sm text-text-muted">
+              <span className={`h-2.5 w-2.5 rounded-full ${online ? 'bg-positive' : 'bg-text-muted/40'}`} />
+              {online ? p?.lastLocation || 'Online' : 'Offline'}
+            </p>
+            <div className="mt-4">
+              <ProfileActions userId={userId} />
+            </div>
           </div>
         </div>
-      </header>
+      </Card>
+
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile value={friends?.length ?? 0} label="Friends" />
+        <StatTile value={followers ?? 0} label="Followers" />
+        <StatTile value={followings ?? 0} label="Following" />
+      </div>
 
       {userInfo.description ? (
         <Section title="About">
@@ -134,16 +149,16 @@ export default function ProfilePage() {
 
       {friendPreview.length ? (
         <Section title={`Friends (${(friends?.length ?? 0).toLocaleString()})`} href={`/users/${userId}/friends`}>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-4">
             {friendPreview.map((f: { id: number; name: string }) => (
-              <a key={f.id} href={`/users/${f.id}/profile`} className="flex w-[72px] flex-col items-center gap-1">
-                <div className="h-14 w-14 overflow-hidden rounded-full bg-surface-alt">
+              <a key={f.id} href={`/users/${f.id}/profile`} className="flex w-16 shrink-0 flex-col items-center gap-1">
+                <div className="h-14 w-14 overflow-hidden rounded-full bg-surface-alt object-cover ring-1 ring-border">
                   {friendHeadMap[f.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={friendHeadMap[f.id]} alt={f.name} className="h-full w-full object-cover" />
                   ) : null}
                 </div>
-                <span className="w-full truncate text-center text-xs">{f.name}</span>
+                <span className="w-full truncate text-center text-xs text-text">{f.name}</span>
               </a>
             ))}
           </div>
@@ -172,16 +187,16 @@ export default function ProfilePage() {
         <Section title="Places">
           <div className="flex flex-wrap gap-3">
             {gameList.map((g: { id: number; name: string; rootPlace: { id: number } }) => (
-              <a key={g.id} href={getGameUrl({ placeId: g.rootPlace.id, name: g.name })} className="w-[150px]">
-                <Card flush className="overflow-hidden">
-                  <div className="aspect-square w-full bg-surface-alt">
+              <a key={g.id} href={getGameUrl({ placeId: g.rootPlace.id, name: g.name })} className="group block w-[150px] shrink-0">
+                <div className="overflow-hidden rounded-rbx border border-border bg-surface shadow-rbx transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-rbx-hover">
+                  <div className="aspect-square w-full overflow-hidden rounded-t-rbx bg-surface-alt">
                     {gameIconMap[g.id] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={gameIconMap[g.id]} alt={g.name} className="h-full w-full object-cover" />
                     ) : null}
                   </div>
-                  <p className="truncate p-2 text-sm font-medium">{g.name}</p>
-                </Card>
+                  <p className="line-clamp-2 p-2 text-sm font-semibold leading-tight text-text">{g.name}</p>
+                </div>
               </a>
             ))}
           </div>
@@ -199,13 +214,13 @@ export default function ProfilePage() {
       ) : null}
 
       <Section title="Statistics">
-        <Card className="flex flex-col gap-1 text-sm">
-          <div className="flex justify-between"><span className="text-text-muted">Join Date</span><span>{userInfo.created ? dayjs(userInfo.created).format('M/D/YYYY') : '—'}</span></div>
-          <div className="flex justify-between"><span className="text-text-muted">Forum Posts</span><span>{(userInfo.postCount ?? 0).toLocaleString()}</span></div>
+        <div className="flex flex-col gap-2 text-sm">
+          <div className="flex justify-between"><span className="text-text-muted">Join Date</span><span className="text-text">{userInfo.created ? dayjs(userInfo.created).format('M/D/YYYY') : '—'}</span></div>
+          <div className="flex justify-between"><span className="text-text-muted">Forum Posts</span><span className="text-text">{(userInfo.postCount ?? 0).toLocaleString()}</span></div>
           {previousNames.length ? (
-            <div className="flex justify-between gap-4"><span className="text-text-muted">Previous Names</span><span className="text-right">{previousNames.join(', ')}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-text-muted">Previous Names</span><span className="text-right text-text">{previousNames.join(', ')}</span></div>
           ) : null}
-        </Card>
+        </div>
       </Section>
     </div>
   );

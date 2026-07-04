@@ -28,7 +28,7 @@ export default function TrackAssetPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Track User Assets</h1>
+      <h1 className="text-2xl font-semibold">Track User Assets</h1>
       <Card className="flex flex-wrap items-end gap-2">
         <label className="flex flex-col text-xs text-text-muted">Asset ID<input className="rounded-rbx border border-border bg-surface px-3 py-2" value={assetId} onChange={(e) => setAssetId(e.target.value)} /></label>
         <Button size="sm" disabled={busy || !assetId} onClick={() => load(`/assets/giveitem-circ?assetId=${assetId}&limit=100`)}>Rollback Circulation</Button>

@@ -36,7 +36,7 @@ export default function GamesSubPage({ userId, groupId }: { userId: number; grou
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-light">Games</h2>
+        <h2 className="text-lg font-semibold text-text">Games</h2>
         {/* /internal/create-place is the surviving .NET create flow (migrated in Phase 5). */}
         <a href="/internal/create-place">
           <Button size="sm">Create New Game</Button>

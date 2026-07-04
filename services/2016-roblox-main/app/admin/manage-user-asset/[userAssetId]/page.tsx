@@ -32,7 +32,7 @@ export default function ManageUserAssetPage() {
   const rows = data || [];
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Item History — UAID {userAssetId}</h1>
+      <h1 className="text-2xl font-semibold">Item History — UAID {userAssetId}</h1>
       {rows.length === 0 ? <p className="text-text-muted">No history.</p> : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

@@ -7,6 +7,7 @@ import { useAuth } from '../../components/providers/AuthProvider';
 import { multiGetUserHeadshots } from '../../services/thumbnails';
 import { buildThumbMap } from '../../lib/thumbnailMap';
 import getFlag from '../../lib/getFlag';
+import Spinner from '../../components/ui/Spinner';
 import FriendsStrip from './_components/FriendsStrip';
 import GameRows from './_components/GameRows';
 import Feed from './_components/Feed';
@@ -33,25 +34,25 @@ export default function HomePage() {
   });
   const selfHeadshot = userId ? buildThumbMap(headshots)[userId] : undefined;
 
-  if (isPending || !isAuthenticated || !userId) return null;
+  if (isPending || !isAuthenticated || !userId) return <Spinner />;
 
   const feedEnabled = getFlag('userFeedEnabled', true) as boolean;
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="flex items-center gap-4">
-        <div className="h-20 w-20 overflow-hidden rounded-full border border-border bg-surface-alt shadow-rbx">
+      <header className="flex items-center gap-3">
+        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border border-border bg-surface-alt shadow-rbx">
           {selfHeadshot ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={selfHeadshot} alt={username || 'You'} className="h-full w-full object-cover" />
           ) : null}
         </div>
-        <h1 className="text-3xl font-semibold sm:text-4xl">Hello, {username}!</h1>
+        <h1 className="text-2xl font-semibold text-text">Hello, {username}!</h1>
       </header>
 
       <FriendsStrip userId={userId} />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           <GameRows />
         </div>

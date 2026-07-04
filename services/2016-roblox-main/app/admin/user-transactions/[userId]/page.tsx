@@ -35,7 +35,7 @@ export default function UserTransactionsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Transactions — User {userId}</h1>
+      <h1 className="text-2xl font-semibold">Transactions — User {userId}</h1>
       <select className={`${sel} w-40`} value={type} onChange={(e) => { setType(e.target.value); setOffset(0); }}>
         {['All', 'Purchase', 'Sale'].map((t) => <option key={t} value={t}>{t}</option>)}
       </select>

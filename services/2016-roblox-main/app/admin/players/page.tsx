@@ -62,7 +62,7 @@ export default function PlayersPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Players</h1>
+      <h1 className="text-2xl font-semibold">Players</h1>
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col text-xs text-text-muted">Sort<select className={sel} value={sortMode} onChange={(e) => setSortMode(e.target.value)}><option value="asc">ASC</option><option value="desc">DESC</option></select></label>
         <label className="flex flex-col text-xs text-text-muted">Column

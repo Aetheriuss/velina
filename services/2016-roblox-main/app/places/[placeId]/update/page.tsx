@@ -67,8 +67,8 @@ export default function UpdatePlacePage() {
   };
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Configure Place</h1>
+    <div className="flex max-w-2xl flex-col gap-4">
+      <h1 className="text-2xl font-semibold">Configure Place</h1>
       <Card className="flex flex-col gap-3">
         <h2 className="font-semibold">Basic Settings</h2>
         <label className="text-sm text-text-muted">Name</label>
@@ -78,7 +78,7 @@ export default function UpdatePlacePage() {
         <div className="flex flex-wrap gap-4">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-text-muted">Genre</span>
-            <select value={genre} onChange={(e) => setGenre(e.target.value)} className="rounded-rbx border border-border bg-surface px-2 py-1.5">
+            <select value={genre} onChange={(e) => setGenre(e.target.value)} className="h-9 rounded-rbx border border-border bg-surface px-2 text-sm">
               {GENRES.map((g) => <option key={g} value={g}>{g}</option>)}
             </select>
           </label>

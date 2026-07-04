@@ -15,17 +15,21 @@ function Guard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isPending: authPending } = useAuth();
 
   if (authPending || isPending) return <p className="text-text-muted">Loading admin…</p>;
-  if (!isAuthenticated || isError || !data) {
+  // The permissions endpoint 200s with an empty rank for ordinary users; only
+  // owner/admin/mod or holders of ≥1 permission get the admin shell.
+  const d = data?.rank?.details;
+  const isStaff = !!(d?.isOwner || d?.isAdmin || d?.isModerator || (data?.rank?.permissions?.length ?? 0) > 0);
+  if (!isAuthenticated || isError || !isStaff) {
     return (
       <div className="py-10 text-center">
-        <h1 className="text-xl font-bold">Admin access required</h1>
+        <h1 className="text-2xl font-semibold">Admin access required</h1>
         <p className="mt-2 text-text-muted">You don&apos;t have permission to view the admin panel.</p>
       </div>
     );
   }
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr]">
-      <aside className="md:sticky md:top-16 md:self-start">
+      <aside className="md:sticky md:top-[66px] md:self-start">
         <AdminSideNav />
       </aside>
       <div className="min-w-0">{children}</div>

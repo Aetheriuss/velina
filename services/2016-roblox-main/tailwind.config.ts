@@ -26,6 +26,7 @@ const config: Config = {
       colors: {
         accent: 'var(--rbx-accent)',
         'accent-hover': 'var(--rbx-accent-hover)',
+        'accent-tint': 'var(--rbx-accent-tint)',
         bg: 'var(--rbx-bg)',
         surface: 'var(--rbx-surface)',
         'surface-alt': 'var(--rbx-surface-alt)',
@@ -33,7 +34,11 @@ const config: Config = {
         'text-muted': 'var(--rbx-text-muted)',
         border: 'var(--rbx-border)',
         'nav-bg': 'var(--rbx-nav-bg)',
+        'sidebar-bg': 'var(--rbx-sidebar-bg)',
+        'sidebar-hover': 'var(--rbx-sidebar-hover)',
+        'sidebar-active': 'var(--rbx-sidebar-active)',
         positive: 'var(--rbx-positive)',
+        'positive-hover': 'var(--rbx-positive-hover)',
         negative: 'var(--rbx-negative)',
       },
       borderRadius: {
@@ -41,9 +46,25 @@ const config: Config = {
       },
       boxShadow: {
         rbx: 'var(--rbx-shadow)',
+        'rbx-hover': 'var(--rbx-shadow-hover)',
+      },
+      spacing: {
+        topbar: '50px', // top bar height
+        sidebar: '220px', // expanded sidebar width
+      },
+      width: {
+        sidebar: '220px',
+      },
+      maxWidth: {
+        content: '1000px', // centered content column
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'Source Sans Pro', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
+      zIndex: {
+        topbar: '50',
+        sidebar: '40',
+        scrim: '30',
       },
     },
   },

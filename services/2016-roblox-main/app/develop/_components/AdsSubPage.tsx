@@ -120,7 +120,7 @@ function AdRow({ entry, imageUrl, onBid }: { entry: AdEntry; imageUrl?: string; 
               value={amount}
               disabled={locked}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-28 rounded-rbx border border-border bg-surface px-2 py-1"
+              className="h-9 w-28 rounded-rbx border border-border bg-surface px-3 text-sm text-text"
             />
             <Button size="sm" disabled={locked} onClick={submit}>
               Bid
@@ -168,7 +168,7 @@ export default function AdsSubPage({ userId, groupId }: { userId: number; groupI
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-light">User Ads</h2>
+      <h2 className="text-lg font-semibold text-text">User Ads</h2>
       {isLoading ? (
         <p className="text-text-muted">Loading…</p>
       ) : !ads || ads.length === 0 ? (

@@ -76,7 +76,7 @@ export default function ClothingSubPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-2xl font-light">Create {details.title}</h2>
+      <h2 className="text-lg font-semibold text-text">Create {details.title}</h2>
       {details.subtext ? <p className="text-sm text-text-muted">{details.subtext}</p> : null}
 
       <Card>
@@ -90,7 +90,7 @@ export default function ClothingSubPage({
             <input
               ref={nameRef}
               type="text"
-              className="rounded-rbx border border-border bg-surface px-2 py-1"
+              className="h-9 rounded-rbx border border-border bg-surface px-3 text-sm text-text"
             />
           </label>
           {feedback ? <p className="text-sm text-negative">{feedback}</p> : null}

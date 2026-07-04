@@ -38,7 +38,7 @@ export default function ItemDetailPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <h1 className="text-xl font-bold">Error loading item</h1>
+        <h1 className="text-2xl font-semibold text-text">Error loading item</h1>
         <p className="mt-2 text-text-muted">{(error as Error).message}</p>
       </div>
     );

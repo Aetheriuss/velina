@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Card from '../../../components/ui/Card';
 
 export const metadata: Metadata = { title: 'Credits' };
 
@@ -13,15 +14,16 @@ const CREDITS: Array<{ name: string; note: string }> = [
 
 export default function CreditsPage() {
   return (
-    <article className="mx-auto max-w-2xl py-6">
-      <h1 className="mb-4 text-3xl font-bold">Credits</h1>
-      <ul className="space-y-3">
+    <Card className="max-w-3xl">
+      <h1 className="mb-4 text-2xl font-semibold text-text">Credits</h1>
+      <ul className="space-y-3 text-text">
         {CREDITS.map((c) => (
           <li key={c.name}>
-            <span className="font-bold">{c.name}</span> — {c.note}
+            <span className="font-semibold">{c.name}</span>{' '}
+            <span className="text-text-muted">— {c.note}</span>
           </li>
         ))}
       </ul>
-    </article>
+    </Card>
   );
 }

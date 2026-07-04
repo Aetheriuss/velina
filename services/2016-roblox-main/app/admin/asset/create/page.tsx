@@ -42,7 +42,7 @@ export default function CreateAssetPage() {
   const set = (k: string, v: string | boolean) => setF((p) => ({ ...p, [k]: v }));
   return (
     <div className="mx-auto max-w-lg">
-      <h1 className="mb-4 text-3xl font-black">Create Item</h1>
+      <h1 className="mb-4 text-2xl font-semibold">Create Item</h1>
       <Card className="flex flex-col gap-2">
         <input className={input} placeholder="Name" value={f.name} onChange={(e) => set('name', e.target.value)} />
         <input className={input} placeholder="Description" value={f.description} onChange={(e) => set('description', e.target.value)} />

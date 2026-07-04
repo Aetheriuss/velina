@@ -32,7 +32,7 @@ export default function GameDetailPage() {
   if (error) {
     return (
       <div className="mx-auto max-w-md py-10 text-center">
-        <h1 className="text-xl font-bold">Error loading game</h1>
+        <h1 className="text-2xl font-semibold text-text">Error loading game</h1>
         <p className="mt-2 text-text-muted">{(error as Error).message}</p>
       </div>
     );

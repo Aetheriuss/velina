@@ -46,7 +46,7 @@ function Inner() {
   const set = (k: string, v: string | boolean) => setF((pr) => ({ ...pr, [k]: v }));
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Update Item Product</h1>
+      <h1 className="text-2xl font-semibold">Update Item Product</h1>
       <Card className="flex gap-2">
         <input className={`${input} flex-1`} placeholder="Asset ID" value={assetId} onChange={(e) => setAssetId(e.target.value)} />
         <Button size="sm" onClick={() => setActive(assetId)}>Search</Button>

@@ -20,7 +20,7 @@ export default function FeatureFlagsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Feature Flags</h1>
+      <h1 className="text-2xl font-semibold">Feature Flags</h1>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {Object.entries(flags).sort(([a], [b]) => a.localeCompare(b)).map(([flag, enabled]) => (
           <Card key={flag} className="flex items-center justify-between gap-2">

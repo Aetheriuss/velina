@@ -60,7 +60,19 @@ export default function FriendsStrip({ userId }: { userId: number }) {
   }, [friends, presenceMap]);
 
   if (isLoading) {
-    return <Card className="animate-pulse text-text-muted">Loading friends…</Card>;
+    return (
+      <Card>
+        <div className="mb-3 h-6 w-32 animate-pulse rounded-rbx bg-surface-alt" />
+        <div className="flex gap-4 overflow-hidden pb-2">
+          {Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="flex w-16 shrink-0 flex-col items-center gap-1">
+              <div className="h-14 w-14 animate-pulse rounded-full bg-surface-alt" />
+              <div className="h-3 w-12 animate-pulse rounded-rbx bg-surface-alt" />
+            </div>
+          ))}
+        </div>
+      </Card>
+    );
   }
   if (!friends || friends.length === 0) {
     return null;
@@ -68,7 +80,9 @@ export default function FriendsStrip({ userId }: { userId: number }) {
 
   return (
     <Card>
-      <h2 className="mb-3 text-xl font-light">Friends ({friends.length})</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-text">Friends ({friends.length})</h2>
+      </div>
       <div className="flex gap-4 overflow-x-auto pb-2">
         {sorted.map((f) => {
           const p = presenceMap[f.id];
@@ -77,24 +91,24 @@ export default function FriendsStrip({ userId }: { userId: number }) {
             <Link
               key={f.id}
               href={`/users/${f.id}/profile`}
-              className="flex w-[84px] shrink-0 flex-col items-center gap-1"
+              className="flex w-16 shrink-0 flex-col items-center gap-1"
               title={f.name}
             >
               <div className="relative">
-                <div className="h-[72px] w-[72px] overflow-hidden rounded-full border border-border bg-surface-alt shadow-rbx">
+                <div className="h-14 w-14 overflow-hidden rounded-full object-cover ring-1 ring-border bg-surface-alt">
                   {headshotMap[f.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={headshotMap[f.id]} alt={f.name} className="h-full w-full object-cover" />
                   ) : null}
                 </div>
-                <span
-                  className={`absolute bottom-0 right-1 h-3 w-3 rounded-full border-2 border-surface ${
-                    online ? 'bg-positive' : 'bg-text-muted/40'
-                  }`}
-                  title={online ? p.lastLocation || 'Online' : 'Offline'}
-                />
+                {online ? (
+                  <span
+                    className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-positive ring-2 ring-surface"
+                    title={p.lastLocation || 'Online'}
+                  />
+                ) : null}
               </div>
-              <span className="w-full truncate text-center text-sm font-medium">{f.name}</span>
+              <span className="w-full truncate text-center text-xs text-text">{f.name}</span>
             </Link>
           );
         })}

@@ -40,7 +40,7 @@ export default function BanUserPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4">
-      <h1 className="text-3xl font-black">Ban User {userId}</h1>
+      <h1 className="text-2xl font-semibold">Ban User {userId}</h1>
       <Card className="flex flex-col gap-3">
         <label className="text-sm text-text-muted">Reason (public)</label>
         <textarea className={input} rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />

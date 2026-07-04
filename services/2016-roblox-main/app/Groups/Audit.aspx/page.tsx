@@ -50,7 +50,7 @@ function AuditInner() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">{info?.name ? `${info.name} — Audit Log` : 'Audit Log'}</h1>
+      <h1 className="text-2xl font-semibold">{info?.name ? `${info.name} — Audit Log` : 'Audit Log'}</h1>
       {isFetching && rows.length === 0 ? (
         <p className="text-text-muted">Loading…</p>
       ) : rows.length === 0 ? (
@@ -73,8 +73,8 @@ function AuditInner() {
         </Card>
       )}
       <div className="flex justify-center gap-3">
-        <button type="button" disabled={!data?.prev || isFetching} onClick={() => data?.prev && setCursor(data.prev)} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Previous</button>
-        <button type="button" disabled={!data?.next || isFetching} onClick={() => data?.next && setCursor(data.next)} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Next</button>
+        <button type="button" disabled={!data?.prev || isFetching} onClick={() => data?.prev && setCursor(data.prev)} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Previous</button>
+        <button type="button" disabled={!data?.next || isFetching} onClick={() => data?.next && setCursor(data.next)} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Next</button>
       </div>
     </div>
   );

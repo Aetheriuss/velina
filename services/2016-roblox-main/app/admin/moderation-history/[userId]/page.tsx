@@ -15,7 +15,7 @@ export default function ModerationHistoryPage() {
   const rows = data || [];
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Moderation History — User {userId}</h1>
+      <h1 className="text-2xl font-semibold">Moderation History — User {userId}</h1>
       {rows.length === 0 ? <p className="text-text-muted">No moderation history.</p> : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

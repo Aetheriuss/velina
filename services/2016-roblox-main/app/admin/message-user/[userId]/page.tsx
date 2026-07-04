@@ -32,7 +32,7 @@ export default function MessageUserPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-4">
-      <h1 className="text-3xl font-black">Message User {userId}</h1>
+      <h1 className="text-2xl font-semibold">Message User {userId}</h1>
       <Card className="flex flex-col gap-3">
         <div className="flex flex-wrap gap-1">
           {TEMPLATES.map((t) => <button key={t.label} type="button" onClick={() => { setSubject(t.subject); setBody(t.body); }} className="rounded bg-surface-alt px-2 py-0.5 text-xs hover:bg-surface">{t.label}</button>)}

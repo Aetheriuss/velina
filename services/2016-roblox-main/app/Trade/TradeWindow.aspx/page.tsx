@@ -113,7 +113,7 @@ function TradeInner() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-bold">Trading with {partner?.name || `User ${partnerId}`}</h1>
+      <h1 className="text-2xl font-semibold">Trading with {partner?.name || `User ${partnerId}`}</h1>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="flex flex-col gap-3">
           <h2 className="font-semibold">Your Offer</h2>

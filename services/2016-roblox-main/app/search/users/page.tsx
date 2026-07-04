@@ -8,6 +8,7 @@ import { multiGetPresence } from '../../../services/presence';
 import { multiGetUserHeadshots } from '../../../services/thumbnails';
 import { buildThumbMap } from '../../../lib/thumbnailMap';
 import Card from '../../../components/ui/Card';
+import Button from '../../../components/ui/Button';
 
 interface Result {
   UserId: number;
@@ -44,8 +45,8 @@ function SearchInner() {
   const results = data?.results || [];
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">User Search</h1>
+    <div className="flex flex-col gap-4">
+      <h1 className="text-2xl font-semibold text-text">User Search</h1>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -57,11 +58,9 @@ function SearchInner() {
           value={box}
           onChange={(e) => setBox(e.target.value)}
           placeholder="Search for a username"
-          className="flex-1 rounded-rbx border border-border bg-surface px-3 py-1.5"
+          className="h-9 flex-1 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted"
         />
-        <button type="submit" className="rounded-rbx bg-accent px-4 font-semibold text-white hover:bg-accent-hover">
-          Search
-        </button>
+        <Button type="submit">Search</Button>
       </form>
 
       {isFetching ? (
@@ -73,16 +72,20 @@ function SearchInner() {
           {results.map((r) => {
             const online = data?.presence[r.UserId]?.userPresenceType !== 'Offline' && !!data?.presence[r.UserId];
             return (
-              <a key={r.UserId} href={`/users/${r.UserId}/profile`}>
-                <Card className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-alt">
+              <a key={r.UserId} href={`/users/${r.UserId}/profile`} className="block">
+                <Card className="flex items-center gap-3 transition-shadow hover:shadow-rbx-hover">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-alt ring-1 ring-border">
                     {data?.heads[r.UserId] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={data.heads[r.UserId]} alt={r.Name} className="h-full w-full object-cover" />
                     ) : null}
                   </div>
-                  <span className="font-medium">{r.Name}</span>
-                  <span className={`ml-auto h-2.5 w-2.5 rounded-full ${online ? 'bg-positive' : 'bg-text-muted/40'}`} />
+                  <span className="font-semibold text-text">{r.Name}</span>
+                  <span
+                    className={`ml-auto h-2.5 w-2.5 rounded-full ${
+                      online ? 'bg-positive' : 'bg-text-muted/40'
+                    }`}
+                  />
                 </Card>
               </a>
             );

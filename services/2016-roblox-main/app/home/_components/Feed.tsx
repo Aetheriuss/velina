@@ -12,7 +12,9 @@ import Card from '../../../components/ui/Card';
 export default function Feed() {
   return (
     <Card>
-      <h2 className="mb-3 text-xl font-light uppercase">My Feed</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-text">My Feed</h2>
+      </div>
       <iframe
         title="My Feed"
         src="/Feeds/GetUserFeed"

@@ -15,7 +15,7 @@ export default function AssetReRenderPage() {
   };
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-4 text-3xl font-black">Force Item Re-Render</h1>
+      <h1 className="mb-4 text-2xl font-semibold">Force Item Re-Render</h1>
       <Card className="flex flex-col gap-2">
         <input className="rounded-rbx border border-border bg-surface px-3 py-2" placeholder="Asset ID" value={assetId} onChange={(e) => setAssetId(e.target.value)} />
         {msg ? <p className="text-sm text-text-muted">{msg}</p> : null}

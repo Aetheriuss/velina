@@ -13,7 +13,7 @@ export default function AdminPermissionsPage() {
   const staff = data || [];
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">Staff List</h1>
+      <h1 className="text-2xl font-semibold">Staff List</h1>
       <Card>
         {staff.length === 0 ? (
           <p className="text-text-muted">No staff.</p>

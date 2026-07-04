@@ -1,12 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Card from '../../../components/ui/Card';
 
 export const metadata: Metadata = { title: 'Privacy Information' };
 
 export default function PrivacyPage() {
   return (
-    <article className="mx-auto max-w-2xl py-6">
-      <h1 className="mb-4 text-3xl font-bold">Privacy Information</h1>
+    <Card className="max-w-3xl text-text">
+      <h1 className="mb-1 text-2xl font-semibold text-text">Privacy Information</h1>
       <p className="text-sm text-text-muted">Last Updated June 29, 2026</p>
       <p className="mt-3">Here&apos;s a list of the type of data we store, as well as how you can delete it.</p>
       <ul className="mt-3 list-disc space-y-3 pl-6">
@@ -43,6 +44,6 @@ export default function PrivacyPage() {
         </a>
         , however you must be offline for one week before you can delete your account.
       </p>
-    </article>
+    </Card>
   );
 }

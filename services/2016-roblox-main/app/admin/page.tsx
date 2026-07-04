@@ -11,8 +11,8 @@ function StatCard({ label, value, tone = 'accent' }: { label: string; value: str
   const toneCls: Record<string, string> = { accent: 'text-accent', positive: 'text-positive', negative: 'text-negative' };
   return (
     <Card>
-      <p className={`text-2xl font-black ${toneCls[tone] || 'text-accent'}`}>{value}</p>
-      <p className="text-sm text-text-muted">{label}</p>
+      <p className={`text-2xl font-semibold ${toneCls[tone] || 'text-accent'}`}>{value}</p>
+      <p className="text-xs uppercase tracking-wide text-text-muted">{label}</p>
     </Card>
   );
 }
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-black">Dashboard</h1>
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {hasPermission('GetUserJoinCount') ? (
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
 
       {showInGame && inGame.data ? (
         <section>
-          <h2 className="mb-2 text-xl font-light">Users In-Game</h2>
+          <h2 className="mb-2 text-lg font-semibold">Users In-Game</h2>
           {inGame.data.length === 0 ? <p className="text-text-muted">No users in game.</p> : (
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {inGame.data.map((u) => (

@@ -36,7 +36,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between text-sm">
       <span className="text-text-muted">{label}</span>
-      <span className="font-medium">{value}</span>
+      <span className="font-semibold text-text">{value}</span>
     </div>
   );
 }
@@ -73,8 +73,8 @@ export default function GameDetail({ place, universe }: { place: Place; universe
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-black">{place.name}</h1>
-        <p className="text-text-muted">
+        <h1 className="text-2xl font-semibold text-text">{place.name}</h1>
+        <p className="text-sm text-text-muted">
           By{' '}
           <a href={creatorHref} className="text-accent hover:underline">
             {universe.creator.name}
@@ -82,7 +82,7 @@ export default function GameDetail({ place, universe }: { place: Place; universe
         </p>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="min-w-0">
           <Card flush className="overflow-hidden">
             <div className="relative aspect-video w-full bg-surface-alt">
@@ -112,12 +112,14 @@ export default function GameDetail({ place, universe }: { place: Place; universe
           </Card>
 
           <section className="mt-6">
-            <h2 className="mb-1 text-xl font-light">About</h2>
-            <p className="whitespace-pre-wrap">{universe.description || place.description || 'No description available.'}</p>
+            <h2 className="mb-1 text-lg font-semibold text-text">About</h2>
+            <p className="whitespace-pre-wrap text-sm text-text">
+              {universe.description || place.description || 'No description available.'}
+            </p>
           </section>
 
           <section className="mt-6">
-            <h2 className="mb-2 text-xl font-light">Servers</h2>
+            <h2 className="mb-2 text-lg font-semibold text-text">Servers</h2>
             <Servers placeId={place.placeId} />
           </section>
         </div>

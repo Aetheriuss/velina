@@ -8,6 +8,7 @@ import { getItemUrl } from '../../../../services/catalog';
 import { multiGetAssetThumbnails } from '../../../../services/thumbnails';
 import { buildThumbMap } from '../../../../lib/thumbnailMap';
 import Card from '../../../../components/ui/Card';
+import Button from '../../../../components/ui/Button';
 
 const CATEGORIES: Array<{ name: string; value: number }> = [
   { name: 'Hats', value: 8 },
@@ -76,26 +77,30 @@ export default function InventoryView({ userId, mode }: { userId: number; mode: 
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">
+      <h1 className="text-2xl font-semibold text-text">
         {userInfo?.name ? `${userInfo.name}'s ` : ''}
         {mode}
       </h1>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[180px_1fr]">
-        <nav className="flex flex-row flex-wrap gap-1 md:flex-col">
-          {CATEGORIES.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => pickCategory(c)}
-              className={`rounded-rbx px-3 py-1.5 text-left text-sm ${
-                c.value === category.value ? 'bg-accent/10 font-semibold text-accent' : 'hover:bg-surface-alt'
-              }`}
-            >
-              {c.name}
-            </button>
-          ))}
-        </nav>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+        <Card flush className="h-fit overflow-hidden">
+          <nav className="flex flex-row flex-wrap gap-1 p-1 lg:flex-col lg:gap-0 lg:p-0 lg:py-2">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => pickCategory(c)}
+                className={`flex h-10 items-center rounded-rbx px-4 text-left text-sm lg:rounded-none ${
+                  c.value === category.value
+                    ? 'relative bg-sidebar-active font-semibold text-accent lg:before:absolute lg:before:left-0 lg:before:top-0 lg:before:h-full lg:before:w-[3px] lg:before:bg-accent'
+                    : 'text-text hover:bg-sidebar-hover'
+                }`}
+              >
+                {c.name}
+              </button>
+            ))}
+          </nav>
+        </Card>
 
         <div className="min-w-0">
           {isFetching && items.length === 0 ? (
@@ -103,18 +108,18 @@ export default function InventoryView({ userId, mode }: { userId: number; mode: 
           ) : items.length === 0 ? (
             <p className="text-text-muted">No {category.name.toLowerCase()} to show.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
               {items.map((it) => (
-                <a key={it.Item.AssetId} href={getItemUrl({ assetId: it.Item.AssetId, name: it.Item.Name })}>
-                  <Card flush className="overflow-hidden">
-                    <div className="aspect-square w-full bg-surface-alt">
+                <a key={it.Item.AssetId} href={getItemUrl({ assetId: it.Item.AssetId, name: it.Item.Name })} className="group block">
+                  <div className="overflow-hidden rounded-rbx border border-border bg-surface shadow-rbx transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:shadow-rbx-hover">
+                    <div className="aspect-square w-full overflow-hidden rounded-t-rbx bg-surface-alt">
                       {thumbMap[it.Item.AssetId] ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={thumbMap[it.Item.AssetId]} alt={it.Item.Name} className="h-full w-full object-contain" />
                       ) : null}
                     </div>
                     <div className="p-2">
-                      <p className="truncate text-sm font-medium" title={it.Item.Name}>
+                      <p className="truncate text-sm font-semibold text-text" title={it.Item.Name}>
                         {it.Item.Name}
                       </p>
                       {it.Creator?.Name ? (
@@ -124,29 +129,27 @@ export default function InventoryView({ userId, mode }: { userId: number; mode: 
                         <p className="text-xs text-text-muted">#{it.Product.SerialNumber}</p>
                       ) : null}
                     </div>
-                  </Card>
+                  </div>
                 </a>
               ))}
             </div>
           )}
 
           <div className="mt-6 flex items-center justify-center gap-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               disabled={!data?.previousPageCursor || isFetching}
               onClick={() => data?.previousPageCursor != null && setCursor(data.previousPageCursor)}
-              className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
             >
               Previous
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
               disabled={!data?.nextPageCursor || isFetching || items.length === 0}
               onClick={() => data?.nextPageCursor != null && setCursor(data.nextPageCursor)}
-              className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       </div>

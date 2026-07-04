@@ -23,7 +23,7 @@ export default function ManageRobuxPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4">
-      <h1 className="text-3xl font-black">Manage Currency</h1>
+      <h1 className="text-2xl font-semibold">Manage Currency</h1>
       {msg ? <p className="text-sm text-negative">{msg}</p> : null}
       <Card className="flex flex-col gap-2">
         <h2 className="font-semibold">Robux</h2>

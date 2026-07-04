@@ -10,6 +10,8 @@ import getFlag from '../../lib/getFlag';
 import { CATALOG_NAV, CATALOG_SORTS } from './_constants';
 import { ItemDetails } from './_types';
 import CatalogCard from './_components/CatalogCard';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
 
 interface SearchResult {
   items: ItemDetails[];
@@ -69,75 +71,77 @@ function CatalogInner() {
   const thumbMap = useMemo(() => buildThumbMap(thumbs), [thumbs]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-3xl font-black">Catalog</h1>
+        <h1 className="text-2xl font-semibold text-text">Catalog</h1>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             applyFilter(() => setKeyword(searchBox));
           }}
-          className="flex w-full max-w-md gap-2"
+          className="flex w-full gap-2 sm:max-w-md"
         >
           <input
             type="text"
             value={searchBox}
             onChange={(e) => setSearchBox(e.target.value)}
             placeholder="Search the catalog"
-            className="flex-1 rounded-rbx border border-border bg-surface px-3 py-1.5"
+            className="h-9 flex-1 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
           />
-          <button type="submit" className="rounded-rbx bg-accent px-4 font-semibold text-white hover:bg-accent-hover">
-            Search
-          </button>
+          <Button type="submit">Search</Button>
         </form>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr]">
-        <aside className="flex flex-col gap-4">
-          <div>
-            <label className="mb-1 block text-sm font-semibold text-text-muted">Sort By</label>
-            <select
-              value={sort}
-              onChange={(e) => applyFilter(() => setSort(parseInt(e.target.value, 10)))}
-              className="w-full rounded-rbx border border-border bg-surface px-2 py-1.5 text-sm"
-            >
-              {CATALOG_SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
+        <aside>
+          <Card className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1 block text-sm font-semibold text-text">Sort By</label>
+              <select
+                value={sort}
+                onChange={(e) => applyFilter(() => setSort(parseInt(e.target.value, 10)))}
+                className="h-9 w-full rounded-rbx border border-border bg-surface px-2 text-sm text-text focus:border-accent focus:outline-none"
+              >
+                {CATALOG_SORTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <nav className="flex flex-col gap-4">
+              {CATALOG_NAV.map((group) => (
+                <div key={group.title}>
+                  <p className="px-1 text-xs font-bold uppercase tracking-wide text-text-muted">{group.title}</p>
+                  <ul className="mt-1 flex flex-col">
+                    {group.items.map((it) => {
+                      const active = it.category === category && it.subCategory === subCategory;
+                      return (
+                        <li key={it.label}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              applyFilter(() => {
+                                setCategory(it.category);
+                                setSubCategory(it.subCategory);
+                              })
+                            }
+                            className={`relative flex h-9 w-full items-center rounded-rbx px-3 text-left text-sm transition-colors ${
+                              active
+                                ? 'bg-sidebar-active font-semibold text-accent before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:rounded-l-rbx before:bg-accent'
+                                : 'text-text hover:bg-sidebar-hover'
+                            }`}
+                          >
+                            {it.label}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               ))}
-            </select>
-          </div>
-          <nav className="flex flex-col gap-3">
-            {CATALOG_NAV.map((group) => (
-              <div key={group.title}>
-                <p className="text-sm font-bold">{group.title}</p>
-                <ul className="mt-1">
-                  {group.items.map((it) => {
-                    const active = it.category === category && it.subCategory === subCategory;
-                    return (
-                      <li key={it.label}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            applyFilter(() => {
-                              setCategory(it.category);
-                              setSubCategory(it.subCategory);
-                            })
-                          }
-                          className={`w-full text-left text-sm ${
-                            active ? 'font-semibold text-accent' : 'text-text-muted hover:text-text'
-                          }`}
-                        >
-                          {it.label}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </nav>
+            </nav>
+          </Card>
         </aside>
 
         <div className="min-w-0">
@@ -146,7 +150,7 @@ function CatalogInner() {
           ) : items.length === 0 ? (
             <p className="text-text-muted">No items found.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
               {items.map((item) => (
                 <CatalogCard key={item.id} item={item} thumbUrl={thumbMap[item.id]} />
               ))}
@@ -154,22 +158,20 @@ function CatalogInner() {
           )}
 
           <div className="mt-6 flex items-center justify-center gap-3">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               disabled={!data?.prev || isFetching}
               onClick={() => setCursor(data?.prev || null)}
-              className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
             >
               Previous
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
               disabled={!data?.next || isFetching}
               onClick={() => setCursor(data?.next || null)}
-              className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -13,7 +13,7 @@ export default function AuthCard({
   return (
     <div className={`mx-auto w-full max-w-md ${className}`}>
       <div className="rounded-rbx border border-border bg-surface p-6 shadow-rbx">
-        {title ? <h1 className="mb-3 text-2xl font-bold">{title}</h1> : null}
+        {title ? <h1 className="mb-3 text-2xl font-semibold text-text">{title}</h1> : null}
         {children}
       </div>
     </div>

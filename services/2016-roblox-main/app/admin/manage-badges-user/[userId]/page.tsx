@@ -27,7 +27,7 @@ export default function ManageBadgesPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4">
-      <h1 className="text-3xl font-black">Manage Badges</h1>
+      <h1 className="text-2xl font-semibold">Manage Badges</h1>
       {msg ? <p className="text-sm text-text-muted">{msg}</p> : null}
       <Card className="flex flex-col gap-2">
         <h2 className="font-semibold">Give Badge</h2>

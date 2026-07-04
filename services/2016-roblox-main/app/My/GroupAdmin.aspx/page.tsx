@@ -146,12 +146,12 @@ function AdminInner() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold">{info?.name ? `Manage ${info.name}` : 'Manage Group'}</h1>
+        <h1 className="text-2xl font-semibold">{info?.name ? `Manage ${info.name}` : 'Manage Group'}</h1>
         <span className="text-sm text-text-muted">Funds: R$ {(funds?.robux ?? 0).toLocaleString()}</span>
       </div>
       <div className="flex flex-wrap gap-2">
         {(['Group Info', 'Members', 'Settings', 'Payouts', 'Revenue'] as Tab[]).map((t) => (
-          <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+          <button key={t} type="button" onClick={() => setTab(t)} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
         ))}
       </div>
       {tab === 'Group Info' ? <GroupInfoTab groupId={groupId} /> :

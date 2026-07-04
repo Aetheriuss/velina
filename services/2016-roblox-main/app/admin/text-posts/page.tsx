@@ -52,7 +52,7 @@ export default function TextModerationPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black">Text Moderation ({posts.length})</h1>
+        <h1 className="text-2xl font-semibold">Text Moderation ({posts.length})</h1>
         <div className="flex gap-2">
           <Button size="sm" variant="secondary" onClick={() => { setDeleted(new Set()); refetch(); }}>Refresh</Button>
           <Button size="sm" onClick={requestPayment}>Request Payment</Button>

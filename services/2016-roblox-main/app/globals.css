@@ -2,51 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
- * 2020-era Roblox design tokens.
- * One token set, two themes. `data-theme` is set on <html> by ThemeProvider
- * (and by the inline FOUC-guard script in layout.tsx before first paint).
- *
- * Palette references the ~2020 roblox.com look: #00A2FF accent, rounded
- * surfaces, a dark top navigation bar in both themes.
- */
+/* =========================================================================
+   2020 Roblox design tokens.
+   One token set, two themes. `data-theme` is set on <html> by ThemeProvider
+   (and by the inline FOUC-guard script in layout.tsx before first paint).
+
+   Light is the default 2020 look. Accent blue and Robux green are constant
+   across themes; only surfaces / text / borders flip.
+   ========================================================================= */
 :root,
 [data-theme='light'] {
-  --rbx-accent: #00a2ff;
-  --rbx-accent-hover: #0092e6;
-  --rbx-bg: #f2f4f5;
-  --rbx-surface: #ffffff;
-  --rbx-surface-alt: #f7f8f8;
-  --rbx-text: #393b3d;
-  --rbx-text-muted: #757575;
-  --rbx-border: #e3e3e3;
-  --rbx-nav-bg: #232527;
-  --rbx-positive: #00b06f;
-  --rbx-negative: #e84c3d;
+  /* Brand / interactive */
+  --rbx-accent: #00a2ff; /* links, primary buttons, active nav */
+  --rbx-accent-hover: #0092e6; /* blue hover / pressed */
+  --rbx-accent-tint: #e5f4ff; /* light-blue wash behind active sidebar row */
+
+  /* Positive / Robux green */
+  --rbx-positive: #02b757; /* purchase buttons, thumbs-up %, Robux */
+  --rbx-positive-hover: #00b06f;
+  --rbx-negative: #e84c3d; /* destructive / decline */
+
+  /* Surfaces */
+  --rbx-bg: #f2f4f5; /* content area background */
+  --rbx-surface: #ffffff; /* cards, sidebar, panels */
+  --rbx-surface-alt: #f7f8f8; /* raised/striped rows, footer */
+
+  /* Text */
+  --rbx-text: #393b3d; /* primary text (NOT pure black) */
+  --rbx-text-muted: #757575; /* secondary / captions */
+
+  /* Lines */
+  --rbx-border: #e3e3e3; /* 1px dividers & card borders */
+
+  /* Shell chrome */
+  --rbx-nav-bg: #191b1d; /* dark top bar */
+  --rbx-sidebar-bg: #ffffff; /* left sidebar surface */
+  --rbx-sidebar-hover: #f2f4f5; /* sidebar row hover */
+  --rbx-sidebar-active: #e5f4ff; /* sidebar row active (== accent-tint) */
+
+  /* Shape / elevation */
   --rbx-radius: 8px;
   --rbx-shadow: 0 1px 3px rgba(25, 27, 29, 0.12);
+  --rbx-shadow-hover: 0 4px 10px rgba(25, 27, 29, 0.16);
 }
 
 [data-theme='dark'] {
   --rbx-accent: #00a2ff;
   --rbx-accent-hover: #33b5ff;
+  --rbx-accent-tint: #0d2b3d; /* muted blue wash for active row on dark */
+
+  --rbx-positive: #02b757;
+  --rbx-positive-hover: #00b06f;
+  --rbx-negative: #e84c3d;
+
   --rbx-bg: #191b1d;
   --rbx-surface: #232527;
   --rbx-surface-alt: #2e3133;
+
   --rbx-text: #ffffff;
   --rbx-text-muted: #bdbebe;
+
   --rbx-border: #3b3d3e;
-  --rbx-nav-bg: #16181a;
-  --rbx-positive: #00b06f;
-  --rbx-negative: #e84c3d;
+
+  --rbx-nav-bg: #16181a; /* top bar sits slightly darker than page */
+  --rbx-sidebar-bg: #232527;
+  --rbx-sidebar-hover: #2e3133;
+  --rbx-sidebar-active: #0d2b3d;
+
   --rbx-radius: 8px;
   --rbx-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --rbx-shadow-hover: 0 4px 10px rgba(0, 0, 0, 0.55);
 }
 
 /*
  * Scoped reset for the App Router tree only. Tailwind preflight is disabled
  * globally (see tailwind.config.ts) so the legacy Bootstrap pages are untouched;
- * we re-establish the essentials under the app shell wrapper instead.
+ * we re-establish preflight's essentials under the app shell wrapper instead.
+ *
+ * Every rule is wrapped in :where() so it has zero specificity — utility
+ * classes (and any component CSS) always win regardless of source order,
+ * exactly like real preflight.
  */
 .rbx-app {
   box-sizing: border-box;
@@ -54,10 +89,92 @@
   background: var(--rbx-bg);
   color: var(--rbx-text);
   font-family: var(--font-sans), 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-.rbx-app *,
-.rbx-app *::before,
-.rbx-app *::after {
+/* Border reset: this is what makes `border`/`border-b` utilities actually
+ * render — without it border-style stays `none` and every Tailwind border
+ * in the app tree silently disappears. */
+:where(.rbx-app *, .rbx-app *::before, .rbx-app *::after) {
   box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: var(--rbx-border);
+}
+
+:where(.rbx-app) :where(h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, pre) {
+  margin: 0;
+}
+
+:where(.rbx-app) :where(h1, h2, h3, h4, h5, h6) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+:where(.rbx-app) :where(ol, ul, menu) {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+:where(.rbx-app) :where(a) {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+:where(.rbx-app) :where(button, input, optgroup, select, textarea) {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+}
+
+:where(.rbx-app) :where(button, [type='button'], [type='submit'], [type='reset']) {
+  cursor: pointer;
+  -webkit-appearance: button;
+  background-image: none;
+}
+
+:where(.rbx-app) :where(input, textarea)::placeholder {
+  color: var(--rbx-text-muted);
+  opacity: 1;
+}
+
+:where(.rbx-app) :where(img, svg, video, canvas, iframe) {
+  display: block;
+  vertical-align: middle;
+}
+
+:where(.rbx-app) :where(img, video) {
+  max-width: 100%;
+  height: auto;
+}
+
+:where(.rbx-app) :where(hr) {
+  height: 0;
+  color: inherit;
+  border-top-width: 1px;
+}
+
+.rbx-app ::selection {
+  background: var(--rbx-accent);
+  color: #fff;
+}
+
+/* Slim scrollbars for the horizontal game/friend rows. */
+.rbx-app ::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.rbx-app ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rbx-app ::-webkit-scrollbar-thumb {
+  background: var(--rbx-border);
+  border-radius: 4px;
+}
+.rbx-app ::-webkit-scrollbar-thumb:hover {
+  background: var(--rbx-text-muted);
 }

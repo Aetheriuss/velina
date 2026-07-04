@@ -17,9 +17,12 @@ function PriceLabel({ item }: { item: ItemDetails }) {
 /** Catalog grid card (2020 re-skin). Links into the item details page. */
 export default function CatalogCard({ item, thumbUrl }: { item: ItemDetails; thumbUrl?: string }) {
   return (
-    <a href={getItemUrl({ assetId: item.id, name: item.name })} className="block">
-      <Card flush className="overflow-hidden transition-transform hover:-translate-y-0.5">
-        <div className="relative aspect-square w-full bg-surface-alt">
+    <a href={getItemUrl({ assetId: item.id, name: item.name })} className="group block">
+      <Card
+        flush
+        className="overflow-hidden transition-all duration-150 group-hover:-translate-y-0.5 group-hover:shadow-rbx-hover"
+      >
+        <div className="relative aspect-square w-full overflow-hidden rounded-t-rbx bg-surface-alt">
           {thumbUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={thumbUrl} alt={item.name} className="h-full w-full object-contain" />
@@ -35,7 +38,7 @@ export default function CatalogCard({ item, thumbUrl }: { item: ItemDetails; thu
           ) : null}
         </div>
         <div className="p-2">
-          <p className="truncate text-sm font-medium" title={item.name}>
+          <p className="truncate text-sm font-semibold leading-tight text-text" title={item.name}>
             {item.name}
           </p>
           <p className="truncate text-xs text-text-muted" title={item.creatorName}>

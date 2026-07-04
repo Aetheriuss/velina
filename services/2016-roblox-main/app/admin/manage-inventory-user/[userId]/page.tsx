@@ -29,7 +29,7 @@ export default function ManageInventoryPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Manage Inventory</h1>
+      <h1 className="text-2xl font-semibold">Manage Inventory</h1>
       {msg ? <p className="text-sm text-text-muted">{msg}</p> : null}
       <Card className="flex flex-col gap-2">
         <h2 className="font-semibold">Give Item</h2>

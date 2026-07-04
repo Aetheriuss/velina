@@ -41,13 +41,17 @@ export default function AdminSideNav() {
   const pathname = usePathname();
   const show = (i: NavItem) => !i.permission || hasPermission(i.permission);
   const linkCls = (href: string) =>
-    `block rounded-rbx px-3 py-1.5 text-sm ${pathname === href ? 'bg-accent/10 font-semibold text-accent' : 'text-text-muted hover:bg-surface-alt hover:text-text'}`;
+    `relative flex h-10 items-center px-4 text-sm ${
+      pathname === href
+        ? 'bg-sidebar-active font-semibold text-accent before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-accent'
+        : 'text-text hover:bg-sidebar-hover'
+    }`;
 
   const catalog = CATALOG.filter(show);
 
   return (
-    <nav className="flex w-full flex-col gap-1">
-      {isPending ? <p className="px-3 text-sm text-text-muted">Loading…</p> : null}
+    <nav className="flex w-full flex-col overflow-hidden rounded-rbx border border-border bg-sidebar-bg py-2 shadow-rbx">
+      {isPending ? <p className="px-4 py-1 text-sm text-text-muted">Loading…</p> : null}
       {MAIN.filter(show).map((i) => (
         <Link key={i.href} href={i.href} className={linkCls(i.href)}>
           {i.name}
@@ -55,7 +59,7 @@ export default function AdminSideNav() {
       ))}
       {catalog.length ? (
         <>
-          <p className="mt-3 px-3 text-xs font-bold uppercase text-text-muted">Catalog</p>
+          <p className="mt-3 px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-text-muted">Catalog</p>
           {catalog.map((i) => (
             <Link key={i.href} href={i.href} className={linkCls(i.href)}>
               {i.name}
@@ -63,7 +67,8 @@ export default function AdminSideNav() {
           ))}
         </>
       ) : null}
-      <Link href="/" className="mt-3 block rounded-rbx px-3 py-1.5 text-sm text-text-muted hover:text-text">
+      <hr className="my-2 border-border" />
+      <Link href="/" className="flex h-10 items-center px-4 text-sm text-text-muted hover:bg-sidebar-hover hover:text-text">
         ← Back to site
       </Link>
     </nav>

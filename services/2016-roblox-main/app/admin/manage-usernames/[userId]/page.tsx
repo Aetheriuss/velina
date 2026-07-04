@@ -24,7 +24,7 @@ export default function ManageUsernamesPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4">
-      <h1 className="text-3xl font-black">Manage Usernames</h1>
+      <h1 className="text-2xl font-semibold">Manage Usernames</h1>
       <Card className="flex flex-col gap-2">
         <label className="text-sm text-text-muted">Previous usernames</label>
         <select value={selected} onChange={(e) => setSelected(e.target.value)} className="rounded-rbx border border-border bg-surface px-3 py-2">

@@ -76,50 +76,72 @@ export default function CatalogDetail({ details }: { details: ItemDetails }) {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-black">{details.name}</h1>
-        {subtitle ? <p className="text-text-muted">{subtitle}</p> : null}
+        <h1 className="text-2xl font-semibold text-text">{details.name}</h1>
+        {subtitle ? <p className="text-sm text-text-muted">{subtitle}</p> : null}
       </header>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,320px)_1fr_260px]">
-        {/* Thumbnail */}
-        <Card flush className="overflow-hidden">
-          <div className="aspect-square w-full bg-surface-alt">
-            {thumbUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbUrl} alt={details.name} className="h-full w-full object-contain" />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Left: thumbnail + creator + description */}
+        <div className="flex min-w-0 flex-col gap-6">
+          <Card flush className="overflow-hidden">
+            <div className="aspect-square w-full overflow-hidden rounded-rbx bg-surface-alt">
+              {thumbUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbUrl} alt={details.name} className="h-full w-full object-contain" />
+              ) : null}
+            </div>
+          </Card>
+
+          <div className="flex items-center justify-between">
+            <div className="min-w-0">
+              <p className="text-sm text-text-muted">Creator</p>
+              <a
+                href={
+                  details.creatorType === 'Group'
+                    ? `/My/Groups.aspx?gid=${details.creatorTargetId}`
+                    : `/users/${details.creatorTargetId}/profile`
+                }
+                className="font-semibold text-accent hover:underline"
+              >
+                {details.creatorName}
+              </a>
+            </div>
+            {isAuthenticated ? (
+              <Button size="sm" variant="ghost" onClick={toggleFavorite}>
+                <span aria-hidden>{favorited ? '♥' : '♡'}</span>
+                {favorited ? 'Favorited' : 'Favorite'}
+                <span className="text-text-muted">({(details.favoriteCount ?? 0).toLocaleString()})</span>
+              </Button>
+            ) : (
+              <span className="text-sm text-text-muted">♥ {(details.favoriteCount ?? 0).toLocaleString()}</span>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold text-text">Description</h2>
+            <p className="mt-1 whitespace-pre-wrap text-text">
+              {details.description || 'No description available.'}
+            </p>
+            {details.genres && details.genres.length ? (
+              <p className="mt-3 text-sm text-text-muted">Genres: {details.genres.join(', ')}</p>
             ) : null}
           </div>
-        </Card>
-
-        {/* Creator + description + genres */}
-        <div className="min-w-0">
-          <p className="text-sm text-text-muted">Creator</p>
-          <a
-            href={
-              details.creatorType === 'Group'
-                ? `/My/Groups.aspx?gid=${details.creatorTargetId}`
-                : `/users/${details.creatorTargetId}/profile`
-            }
-            className="font-medium text-accent hover:underline"
-          >
-            {details.creatorName}
-          </a>
-          <h2 className="mt-4 text-sm font-semibold text-text-muted">Description</h2>
-          <p className="whitespace-pre-wrap">{details.description || 'No description available.'}</p>
-          {details.genres && details.genres.length ? (
-            <p className="mt-3 text-sm text-text-muted">Genres: {details.genres.join(', ')}</p>
-          ) : null}
         </div>
 
-        {/* Buy panel + favorite */}
+        {/* Right rail: price + buy */}
         <div className="flex flex-col gap-3">
           <Card>
             {canBuyFromCreator ? (
               <>
-                <p className="text-lg font-bold text-positive">
+                <p className="text-xl font-semibold text-positive">
                   {details.price === 0 ? 'Free' : `R$ ${(details.price ?? 0).toLocaleString()}`}
                 </p>
-                <Button className="mt-2 w-full" onClick={startCreatorBuy} disabled={!isAuthenticated}>
+                <Button
+                  variant="positive"
+                  className="mt-3 w-full"
+                  onClick={startCreatorBuy}
+                  disabled={!isAuthenticated}
+                >
                   {details.price === 0 ? 'Take One' : 'Buy'}
                 </Button>
               </>
@@ -129,18 +151,7 @@ export default function CatalogDetail({ details }: { details: ItemDetails }) {
               <p className="text-sm text-text-muted">This item is offsale.</p>
             )}
             {details.saleCount != null ? (
-              <p className="mt-2 text-xs text-text-muted">Sales: {details.saleCount.toLocaleString()}</p>
-            ) : null}
-          </Card>
-
-          <Card className="flex items-center justify-between">
-            <span className="text-sm">
-              ⭐ {(details.favoriteCount ?? 0).toLocaleString()}
-            </span>
-            {isAuthenticated ? (
-              <Button size="sm" variant="secondary" onClick={toggleFavorite}>
-                {favorited ? 'Unfavorite' : 'Favorite'}
-              </Button>
+              <p className="mt-3 text-xs text-text-muted">Sales: {details.saleCount.toLocaleString()}</p>
             ) : null}
           </Card>
         </div>
@@ -148,7 +159,7 @@ export default function CatalogDetail({ details }: { details: ItemDetails }) {
 
       {limited ? (
         <section>
-          <h2 className="mb-2 text-xl font-light">Private Sales</h2>
+          <h2 className="mb-3 text-lg font-semibold text-text">Private Sales</h2>
           <Card>
             <Resellers
               assetId={assetId}
@@ -161,13 +172,15 @@ export default function CatalogDetail({ details }: { details: ItemDetails }) {
       ) : null}
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Recommended</h2>
+        <h2 className="mb-3 text-lg font-semibold text-text">Recommended</h2>
         <Recommendations assetId={assetId} assetTypeId={details.assetType ?? 0} />
       </section>
 
       <section>
-        <h2 className="mb-2 text-xl font-light">Comments</h2>
-        <Comments assetId={assetId} />
+        <h2 className="mb-3 text-lg font-semibold text-text">Comments</h2>
+        <Card>
+          <Comments assetId={assetId} />
+        </Card>
       </section>
 
       {buyTarget ? (

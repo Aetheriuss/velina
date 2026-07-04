@@ -73,14 +73,16 @@ function DevelopInner() {
 
   if (isPending || !isAuthenticated || !userId) return null;
 
-  const tabClass = (active: boolean) =>
-    `rounded-rbx px-3 py-1.5 text-sm font-semibold ${
-      active ? 'bg-accent text-white' : 'bg-surface-alt text-text hover:bg-surface'
-    }`;
+  const tabClass = (active: boolean, disabled = false) =>
+    `h-9 rounded-rbx px-3 text-sm font-semibold transition-colors ${
+      active
+        ? 'bg-accent text-white'
+        : 'border border-border bg-surface text-text hover:bg-bg'
+    } ${disabled ? 'opacity-40' : ''}`;
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-3xl font-black">Develop</h1>
+      <h1 className="text-2xl font-semibold text-text">Create</h1>
 
       <div className="flex items-center gap-2">
         <button type="button" className={tabClass(tab === 'user')} onClick={() => setTab('user')}>
@@ -88,7 +90,7 @@ function DevelopInner() {
         </button>
         <button
           type="button"
-          className={tabClass(tab === 'group')}
+          className={tabClass(tab === 'group', !groups || groups.length === 0)}
           onClick={() => setTab('group')}
           disabled={!groups || groups.length === 0}
         >
@@ -101,7 +103,7 @@ function DevelopInner() {
           <select
             value={selectedGroupId ?? ''}
             onChange={(e) => setSelectedGroupId(parseInt(e.target.value, 10))}
-            className="w-full max-w-xs rounded-rbx border border-border bg-surface px-2 py-1.5"
+            className="h-9 w-full max-w-xs rounded-rbx border border-border bg-surface px-2 text-sm text-text"
           >
             {groups.map((g) => (
               <option key={g.group.id} value={g.group.id}>
@@ -114,20 +116,27 @@ function DevelopInner() {
         )
       ) : null}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr]">
-        <nav className="flex flex-col gap-1">
-          {DEVELOPER_PAGES.map((p) => (
-            <Link
-              key={p.view}
-              href={`/develop?View=${p.view}`}
-              className={`rounded-rbx px-3 py-2 text-sm ${
-                p.view === view ? 'bg-accent/10 font-semibold text-accent' : 'hover:bg-surface-alt'
-              }`}
-            >
-              {p.label}
-            </Link>
-          ))}
-        </nav>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+        <Card flush className="h-fit overflow-hidden">
+          <nav className="flex flex-col py-1">
+            {DEVELOPER_PAGES.map((p) => {
+              const active = p.view === view;
+              return (
+                <Link
+                  key={p.view}
+                  href={`/develop?View=${p.view}`}
+                  className={`flex h-10 items-center px-4 text-sm transition-colors ${
+                    active
+                      ? 'relative bg-sidebar-active font-semibold text-accent before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-accent'
+                      : 'text-text hover:bg-sidebar-hover'
+                  }`}
+                >
+                  {p.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </Card>
 
         <Card className="min-w-0">{subPage}</Card>
       </div>

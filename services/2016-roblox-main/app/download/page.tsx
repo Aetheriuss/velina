@@ -22,16 +22,16 @@ export default function DownloadPage() {
   if (!enabled) {
     return (
       <Card className="mx-auto mt-8 max-w-md text-center">
-        <h1 className="text-xl font-bold">Downloads unavailable</h1>
+        <h1 className="text-lg font-semibold">Downloads unavailable</h1>
         <p className="mt-2 text-text-muted">The download page is not currently available.</p>
       </Card>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-3xl">
       <header className="mb-6">
-        <h1 className="text-3xl font-black">Download</h1>
+        <h1 className="text-2xl font-semibold">Download</h1>
         <p className="text-text-muted">Download the ROBLOX Player to get into the game.</p>
       </header>
 

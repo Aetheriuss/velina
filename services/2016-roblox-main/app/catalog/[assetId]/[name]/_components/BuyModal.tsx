@@ -94,7 +94,7 @@ export default function BuyModal({
               <Button size="sm" variant="ghost" onClick={onClose} disabled={state === 'pending'}>
                 Cancel
               </Button>
-              <Button size="sm" onClick={buy} disabled={state === 'pending'}>
+              <Button size="sm" variant="positive" onClick={buy} disabled={state === 'pending'}>
                 {state === 'pending' ? 'Buying…' : 'Buy Now'}
               </Button>
             </div>

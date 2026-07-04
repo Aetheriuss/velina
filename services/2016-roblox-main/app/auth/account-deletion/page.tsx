@@ -54,20 +54,21 @@ export default function AccountDeletionPage() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="rounded-rbx border border-border bg-surface px-3 py-2"
+          className="h-9 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded-rbx border border-border bg-surface px-3 py-2"
+          className="h-9 rounded-rbx border border-border bg-surface px-3 text-sm text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
         />
         <div className="mt-1">
           <Button
             type="submit"
+            variant="secondary"
             disabled={submitting}
-            className="border border-negative bg-negative text-white hover:opacity-90"
+            className="!border-negative !text-negative hover:!bg-negative/10"
           >
             {submitting ? 'Deleting…' : 'Delete Account'}
           </Button>

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import Card from '../../../components/ui/Card';
 
 export const metadata: Metadata = { title: 'Terms of Service' };
 
@@ -11,8 +12,8 @@ const Rule = ({ bold, children }: { bold: string; children?: React.ReactNode }) 
 
 export default function TosPage() {
   return (
-    <article className="mx-auto max-w-2xl py-6">
-      <h1 className="mb-4 text-3xl font-bold">Terms of Service</h1>
+    <Card className="max-w-3xl text-text">
+      <h1 className="mb-1 text-2xl font-semibold text-text">Terms of Service</h1>
       <p className="text-sm text-text-muted">Last Updated June 29, 2026</p>
       <p className="mt-3">
         This is essentially just a list of rules for our platform. We reserve the right to update
@@ -29,7 +30,7 @@ export default function TosPage() {
         given temporary bans (e.g. 1 day or 1 week) depending on the severity.
       </p>
 
-      <h2 className="mt-6 font-bold">Text Guidelines</h2>
+      <h2 className="mt-6 text-lg font-semibold text-text">Text Guidelines</h2>
       <p className="text-text-muted">
         These apply to all text inputs on the site, such as in-game chat.
       </p>
@@ -48,7 +49,7 @@ export default function TosPage() {
         </Rule>
       </ul>
 
-      <h2 className="mt-6 font-bold">Image Guidelines</h2>
+      <h2 className="mt-6 text-lg font-semibold text-text">Image Guidelines</h2>
       <p className="text-text-muted">
         As well as the above, these guidelines apply to images uploaded to the site:
       </p>
@@ -60,7 +61,7 @@ export default function TosPage() {
         <Rule bold="Do not upload pornographic content featuring underage characters." />
       </ul>
 
-      <h2 className="mt-6 font-bold">Other Notes</h2>
+      <h2 className="mt-6 text-lg font-semibold text-text">Other Notes</h2>
       <ul className="mt-2 list-disc pl-6">
         <Rule bold="You are responsible for the security of your account.">
           Password resets are done on a case-by-case basis. Pick a strong password — if you forget it
@@ -74,6 +75,6 @@ export default function TosPage() {
           websites, your YouTube channel, etc. would not.
         </Rule>
       </ul>
-    </article>
+    </Card>
   );
 }

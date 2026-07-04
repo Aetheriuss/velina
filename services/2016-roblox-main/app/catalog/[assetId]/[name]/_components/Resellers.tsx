@@ -49,6 +49,7 @@ export default function Resellers({
           <span className="font-semibold text-positive">R$ {r.price.toLocaleString()}</span>
           <Button
             size="sm"
+            variant="positive"
             onClick={() =>
               onBuy({
                 productId,

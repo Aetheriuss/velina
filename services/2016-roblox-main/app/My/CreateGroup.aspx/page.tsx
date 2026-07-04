@@ -34,8 +34,8 @@ export default function CreateGroupPage() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="mb-4 text-3xl font-black">Create a Group</h1>
+    <div className="max-w-2xl">
+      <h1 className="mb-4 text-2xl font-semibold">Create a Group</h1>
       <Card>
         <form onSubmit={submit} className="flex flex-col gap-3">
           {feedback ? <p className="text-sm text-negative">{feedback}</p> : null}

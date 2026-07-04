@@ -78,7 +78,7 @@ export default function MessagesPage() {
       <div className="mx-auto flex max-w-2xl flex-col gap-3">
         <button type="button" onClick={() => setOpen(null)} className="text-left text-sm text-accent hover:underline">← Back to {tab}</button>
         <Card className="flex flex-col gap-2">
-          <h1 className="text-xl font-bold">{open.subject}</h1>
+          <h1 className="text-xl font-semibold">{open.subject}</h1>
           <p className="text-sm text-text-muted">
             From <a href={`/users/${open.sender.id}/profile`} className="text-accent hover:underline">{open.sender.name}</a> · {dayjs(open.created).format('M/D/YYYY h:mm A')}
           </p>
@@ -103,10 +103,10 @@ export default function MessagesPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
-      <h1 className="text-3xl font-black">Messages</h1>
+      <h1 className="text-2xl font-semibold">Messages</h1>
       <div className="flex flex-wrap gap-2">
         {(['inbox', 'sent', 'notifications', 'archive'] as Tab[]).map((t) => (
-          <button key={t} type="button" onClick={() => changeTab(t)} className={`rounded-rbx px-3 py-1.5 text-sm font-semibold capitalize ${tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'}`}>{t}</button>
+          <button key={t} type="button" onClick={() => changeTab(t)} className={`inline-flex h-9 items-center rounded-rbx px-3 text-sm font-semibold capitalize transition-colors ${tab === t ? 'bg-accent text-white' : 'bg-surface border border-border hover:bg-bg'}`}>{t}</button>
         ))}
       </div>
 
@@ -136,9 +136,9 @@ export default function MessagesPage() {
 
       {tab !== 'notifications' && (data?.totalPages || 1) > 1 ? (
         <div className="flex items-center justify-center gap-3">
-          <button type="button" disabled={page === 0 || isFetching} onClick={() => setPage((p) => Math.max(0, p - 1))} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Previous</button>
+          <button type="button" disabled={page === 0 || isFetching} onClick={() => setPage((p) => Math.max(0, p - 1))} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Previous</button>
           <span className="text-sm text-text-muted">Page {page + 1} of {data?.totalPages}</span>
-          <button type="button" disabled={page + 1 >= (data?.totalPages || 1) || isFetching} onClick={() => setPage((p) => p + 1)} className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40">Next</button>
+          <button type="button" disabled={page + 1 >= (data?.totalPages || 1) || isFetching} onClick={() => setPage((p) => p + 1)} className="h-9 rounded-rbx border border-border bg-surface px-4 text-sm font-medium hover:bg-bg disabled:opacity-40 disabled:pointer-events-none">Next</button>
         </div>
       ) : null}
     </div>

@@ -81,7 +81,7 @@ export default function FriendsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-black">{userInfo?.name ? `${userInfo.name}'s Friends` : 'Friends'}</h1>
+      <h1 className="text-2xl font-semibold text-text">{userInfo?.name ? `${userInfo.name}'s Friends` : 'Friends'}</h1>
 
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => (
@@ -89,8 +89,10 @@ export default function FriendsPage() {
             key={t}
             type="button"
             onClick={() => changeTab(t)}
-            className={`rounded-rbx px-3 py-1.5 text-sm font-semibold ${
-              tab === t ? 'bg-accent text-white' : 'bg-surface-alt hover:bg-surface'
+            className={`flex h-9 items-center rounded-rbx px-3 text-sm font-semibold ${
+              tab === t
+                ? 'bg-accent text-white'
+                : 'border border-border bg-surface text-text hover:bg-bg'
             }`}
           >
             {t === 'Requests' ? 'Friend Requests' : t}
@@ -103,17 +105,17 @@ export default function FriendsPage() {
       ) : users.length === 0 ? (
         <p className="text-text-muted">Nothing to show here.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {users.map((u) => (
-            <Card key={u.id} className="flex items-center gap-3">
-              <a href={`/users/${u.id}/profile`} className="flex min-w-0 flex-1 items-center gap-3">
-                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-alt">
+            <Card key={u.id} className="flex flex-col items-center gap-3 text-center">
+              <a href={`/users/${u.id}/profile`} className="flex min-w-0 flex-col items-center gap-2">
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-surface-alt ring-1 ring-border">
                   {headMap[u.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={headMap[u.id]} alt={u.name} className="h-full w-full object-cover" />
                   ) : null}
                 </div>
-                <span className="truncate font-medium">{u.name}</span>
+                <span className="w-full truncate text-sm font-semibold text-text">{u.name}</span>
               </a>
               {isSelf && tab === 'Friends' ? (
                 <Button size="sm" variant="secondary" onClick={async () => { await unfriendUser({ userId: u.id }); refresh(); }}>
@@ -140,22 +142,20 @@ export default function FriendsPage() {
 
       {tab !== 'Friends' ? (
         <div className="flex items-center justify-center gap-3">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             disabled={!listQuery.data?.prev || listQuery.isFetching}
             onClick={() => listQuery.data?.prev && setCursor(listQuery.data.prev)}
-            className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
           >
             Previous
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
             disabled={!listQuery.data?.next || listQuery.isFetching}
             onClick={() => listQuery.data?.next && setCursor(listQuery.data.next)}
-            className="rounded-rbx border border-border px-4 py-1.5 text-sm disabled:opacity-40"
           >
             Next
-          </button>
+          </Button>
         </div>
       ) : null}
     </div>

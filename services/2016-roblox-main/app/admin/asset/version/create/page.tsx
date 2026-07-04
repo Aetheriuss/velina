@@ -27,7 +27,7 @@ export default function CreateAssetVersionPage() {
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-4 text-3xl font-black">Update Item RBXM</h1>
+      <h1 className="mb-4 text-2xl font-semibold">Update Item RBXM</h1>
       <Card className="flex flex-col gap-2">
         <input className={input} placeholder="Asset ID" value={assetId} onChange={(e) => setAssetId(e.target.value)} />
         <input ref={fileRef} type="file" accept=".rbxm" className="text-sm" />

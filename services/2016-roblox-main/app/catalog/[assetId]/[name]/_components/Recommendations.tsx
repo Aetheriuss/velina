@@ -33,16 +33,22 @@ export default function Recommendations({ assetId, assetTypeId }: { assetId: num
   return (
     <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
       {data.map((r) => (
-        <a key={r.item.assetId} href={getItemUrl({ assetId: r.item.assetId, name: r.item.name })} className="block">
-          <div className="aspect-square overflow-hidden rounded-rbx border border-border bg-surface-alt">
-            {thumbMap[r.item.assetId] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thumbMap[r.item.assetId]} alt={r.item.name} className="h-full w-full object-contain" />
-            ) : null}
+        <a
+          key={r.item.assetId}
+          href={getItemUrl({ assetId: r.item.assetId, name: r.item.name })}
+          className="group block"
+        >
+          <div className="overflow-hidden rounded-rbx border border-border bg-surface shadow-rbx transition-all duration-150 group-hover:-translate-y-0.5 group-hover:shadow-rbx-hover">
+            <div className="aspect-square overflow-hidden rounded-t-rbx bg-surface-alt">
+              {thumbMap[r.item.assetId] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbMap[r.item.assetId]} alt={r.item.name} className="h-full w-full object-contain" />
+              ) : null}
+            </div>
+            <p className="truncate p-2 text-xs font-semibold text-text" title={r.item.name}>
+              {r.item.name}
+            </p>
           </div>
-          <p className="mt-1 truncate text-xs" title={r.item.name}>
-            {r.item.name}
-          </p>
         </a>
       ))}
     </div>
