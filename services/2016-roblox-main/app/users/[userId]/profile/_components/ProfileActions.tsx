@@ -34,8 +34,6 @@ export default function ProfileActions({ userId }: { userId: number }) {
     queryFn: () => isAuthenticatedUserFollowingUserId({ userId }),
   });
 
-  if (!isAuthenticated || isSelf) return null;
-
   const refreshStatus = () => queryClient.invalidateQueries({ queryKey: statusKey });
   const refreshFollow = () => queryClient.invalidateQueries({ queryKey: followKey });
 
@@ -52,22 +50,42 @@ export default function ProfileActions({ userId }: { userId: number }) {
     }
   };
 
+  const openTradeWindow = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.open(
+      `/Trade/TradeWindow.aspx?TradePartnerID=${userId}`,
+      '_blank',
+      'scrollbars=0, height=608, width=914',
+    );
+  };
+
   return (
     <div className="flex flex-wrap gap-2">
-      {friendButton()}
-      <Button
-        size="sm"
-        variant="secondary"
-        onClick={async () => {
-          if (isFollowing) await unfollowUser({ userId });
-          else await followUser({ userId });
-          refreshFollow();
-        }}
-      >
-        {isFollowing ? 'Unfollow' : 'Follow'}
-      </Button>
-      <a href={`/messages/compose?userId=${userId}`}>
-        <Button size="sm" variant="secondary">Message</Button>
+      {isAuthenticated && !isSelf && (
+        <>
+          {friendButton()}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={async () => {
+              if (isFollowing) await unfollowUser({ userId });
+              else await followUser({ userId });
+              refreshFollow();
+            }}
+          >
+            {isFollowing ? 'Unfollow' : 'Follow'}
+          </Button>
+          <a href={`/messages/compose?userId=${userId}`}>
+            <Button size="sm" variant="secondary">Message</Button>
+          </a>
+          <Button size="sm" variant="secondary" onClick={openTradeWindow}>Trade</Button>
+        </>
+      )}
+      <a href={`/users/${userId}/inventory`}>
+        <Button size="sm" variant="secondary">Inventory</Button>
+      </a>
+      <a href={`/internal/collectibles?userId=${userId}`}>
+        <Button size="sm" variant="secondary">Collectibles</Button>
       </a>
     </div>
   );

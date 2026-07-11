@@ -31,18 +31,30 @@ function SearchInner() {
     queryFn: async () => {
       const res = await searchUsers({ keyword, limit: 12, offset: 0 });
       const results: Result[] = res.UserSearchResults || [];
-      const ids = results.map((r) => r.UserId);
-      const [presence, heads] = await Promise.all([
-        ids.length ? multiGetPresence({ userIds: ids }) : Promise.resolve([]),
-        ids.length ? multiGetUserHeadshots({ userIds: ids }) : Promise.resolve([]),
-      ]);
-      const pMap: Record<number, Presence> = {};
-      (presence as Presence[]).forEach((p) => (pMap[p.userId] = p));
-      return { results, presence: pMap, heads: buildThumbMap(heads) };
+      return { results };
     },
   });
 
   const results = data?.results || [];
+  const ids = useMemo(() => results.map((r) => r.UserId), [results]);
+
+  const { data: presenceData } = useQuery({
+    queryKey: ['user-search-presence', ids],
+    queryFn: () => multiGetPresence({ userIds: ids }),
+    enabled: ids.length > 0,
+  });
+  const presence = useMemo(() => {
+    const pMap: Record<number, Presence> = {};
+    ((presenceData || []) as Presence[]).forEach((p) => (pMap[p.userId] = p));
+    return pMap;
+  }, [presenceData]);
+
+  const { data: headsData } = useQuery({
+    queryKey: ['user-search-heads', ids],
+    queryFn: () => multiGetUserHeadshots({ userIds: ids }),
+    enabled: ids.length > 0,
+  });
+  const heads = buildThumbMap(headsData);
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,14 +82,14 @@ function SearchInner() {
       ) : (
         <div className="flex flex-col gap-2">
           {results.map((r) => {
-            const online = data?.presence[r.UserId]?.userPresenceType !== 'Offline' && !!data?.presence[r.UserId];
+            const online = presence[r.UserId]?.userPresenceType !== 'Offline' && !!presence[r.UserId];
             return (
               <a key={r.UserId} href={`/users/${r.UserId}/profile`} className="block">
                 <Card className="flex items-center gap-3 transition-shadow hover:shadow-rbx-hover">
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-surface-alt ring-1 ring-border">
-                    {data?.heads[r.UserId] ? (
+                    {heads[r.UserId] ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={data.heads[r.UserId]} alt={r.Name} className="h-full w-full object-cover" />
+                      <img src={heads[r.UserId]} alt={r.Name} className="h-full w-full object-cover" />
                     ) : null}
                   </div>
                   <span className="font-semibold text-text">{r.Name}</span>

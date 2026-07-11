@@ -21,10 +21,10 @@ export default function ManageInventoryPage() {
 
   const give = async () => {
     setMsg(null);
-    try { await adminPost('/giveitem', { userId, assetId: parseInt(assetId, 10), copies: parseInt(copies, 10) || 1, giveSerial: giveSerial === 'true' }); setMsg('Item(s) given.'); refetch(); }
+    try { await adminPost('/giveitem', { userId: Number(userId), assetId: parseInt(assetId, 10), copies: parseInt(copies, 10) || 1, giveSerial: giveSerial === 'true' }); setMsg('Item(s) given.'); refetch(); }
     catch (e) { setMsg((e as Error).message); }
   };
-  const remove = async (uaid: number) => { setMsg(null); try { await adminPost('/removeitem', { userId, userAssetId: uaid }); refetch(); } catch (e) { setMsg((e as Error).message); } };
+  const remove = async (uaid: number) => { setMsg(null); try { await adminPost('/removeitem', { userId: Number(userId), userAssetId: uaid }); refetch(); } catch (e) { setMsg((e as Error).message); } };
 
   const input = 'rounded-rbx border border-border bg-surface px-3 py-2';
   return (

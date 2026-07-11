@@ -32,7 +32,7 @@ export default function ManageUserPage() {
     if (opts?.confirm && !confirm(opts.confirm)) return;
     setMsg(null);
     try {
-      const r = await adminPost(path, opts?.body ?? { userId });
+      const r = await adminPost(path, opts?.body ?? { userId: Number(userId) });
       if (opts?.then) opts.then(r);
       else refetch();
     } catch (e) { setMsg((e as Error).message); }
@@ -88,7 +88,8 @@ export default function ManageUserPage() {
           {hasPermission('DestroyAllSessionsForUser') ? <Button size="sm" variant="secondary" onClick={() => action('/user/logout', { confirm: 'Destroy all sessions?' })}>Reset Sessions</Button> : null}
           {hasPermission('ResetUsername') ? <Button size="sm" variant="secondary" onClick={() => action(`/users/${userId}/reset-username`, { confirm: 'Reset username?', body: {} })}>Reset Username</Button> : null}
           {hasPermission('ResetDescription') ? <Button size="sm" variant="secondary" onClick={() => action(`/users/${userId}/reset-description`, { confirm: 'Reset description?', body: {} })}>Reset Description</Button> : null}
-          {is('admin') && hasPermission('DeleteUser') ? <Button size="sm" className="bg-negative text-white" onClick={() => action('/user/delete', { confirm: 'GDPR-delete this user? This is irreversible.' })}>Delete User</Button> : null}
+          {/* /user/delete additionally hard-requires the owner server-side (GDPR delete) */}
+          {is('owner') && hasPermission('DeleteUser') ? <Button size="sm" className="bg-negative text-white" onClick={() => action('/user/delete', { confirm: 'GDPR-delete this user? This is irreversible.' })}>Delete User</Button> : null}
         </div>
       </section>
 

@@ -29,16 +29,16 @@ export default function ManageRobuxPage() {
         <h2 className="font-semibold">Robux</h2>
         <input className={input} type="number" value={robux} onChange={(e) => setRobux(e.target.value)} />
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => act('/giverobux', { userId, robux: parseInt(robux, 10) })}>Give</Button>
-          <Button size="sm" variant="secondary" onClick={() => act('/removerobux', { userId, robux: parseInt(robux, 10) })}>Remove</Button>
+          <Button size="sm" onClick={() => act('/giverobux', { userId: Number(userId), robux: parseInt(robux, 10) })}>Give</Button>
+          <Button size="sm" variant="secondary" onClick={() => act('/removerobux', { userId: Number(userId), robux: parseInt(robux, 10) })}>Remove</Button>
         </div>
       </Card>
       <Card className="flex flex-col gap-2">
         <h2 className="font-semibold">Tickets</h2>
         <input className={input} type="number" value={tickets} onChange={(e) => setTickets(e.target.value)} />
         <div className="flex gap-2">
-          <Button size="sm" onClick={() => act('/givetickets', { userId, tickets: parseInt(tickets, 10) })}>Give</Button>
-          <Button size="sm" variant="secondary" onClick={() => act('/removetickets', { userId, tickets: parseInt(tickets, 10) })}>Remove</Button>
+          <Button size="sm" onClick={() => act('/givetickets', { userId: Number(userId), tickets: parseInt(tickets, 10) })}>Give</Button>
+          <Button size="sm" variant="secondary" onClick={() => act('/removetickets', { userId: Number(userId), tickets: parseInt(tickets, 10) })}>Remove</Button>
         </div>
       </Card>
     </div>

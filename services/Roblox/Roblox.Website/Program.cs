@@ -103,8 +103,11 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 {
     o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     o.JsonSerializerOptions.PropertyNamingPolicy = null;
+    o.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
 });
 builder.Services.AddSignalR();
+// Admin uploads allow files up to 80 MB; raise Kestrel's default (~30 MB) so those requests aren't rejected.
+builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 100_000_000);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

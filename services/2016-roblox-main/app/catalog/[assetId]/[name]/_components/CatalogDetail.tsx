@@ -150,6 +150,11 @@ export default function CatalogDetail({ details }: { details: ItemDetails }) {
             ) : (
               <p className="text-sm text-text-muted">This item is offsale.</p>
             )}
+            {canBuyFromCreator && details.price !== 0 && details.unitsAvailableForConsumption ? (
+              <p className="mt-3 text-xs text-text-muted">
+                Remaining: {details.unitsAvailableForConsumption.toLocaleString()}
+              </p>
+            ) : null}
             {details.saleCount != null ? (
               <p className="mt-3 text-xs text-text-muted">Sales: {details.saleCount.toLocaleString()}</p>
             ) : null}

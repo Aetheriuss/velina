@@ -46,10 +46,10 @@ export default function AccountPage() {
 
   // Password change
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' });
-  const [pwMsg, setPwMsg] = useState<string | null>(null);
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
   // Username change
   const [un, setUn] = useState({ username: '', password: '' });
-  const [unMsg, setUnMsg] = useState<string | null>(null);
+  const [unMsg, setUnMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   if (!enabled) return <p className="text-center text-text-muted">The 2016 account settings page is disabled.</p>;
   if (isPending) return null;
@@ -62,19 +62,19 @@ export default function AccountPage() {
   const doPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwMsg(null);
-    if (pw.next !== pw.confirm) return setPwMsg('New passwords do not match.');
-    try { await changePassword({ existingPassword: pw.current, newPassword: pw.next }); setPwMsg('Password changed.'); setPw({ current: '', next: '', confirm: '' }); }
-    catch (err) { setPwMsg((err as Error).message); }
+    if (pw.next !== pw.confirm) return setPwMsg({ ok: false, text: 'New passwords do not match.' });
+    try { await changePassword({ existingPassword: pw.current, newPassword: pw.next }); setPwMsg({ ok: true, text: 'Password changed.' }); setPw({ current: '', next: '', confirm: '' }); }
+    catch (err) { setPwMsg({ ok: false, text: (err as Error).message }); }
   };
   const doUsername = async (e: React.FormEvent) => {
     e.preventDefault();
     setUnMsg(null);
     try {
       const v = await validateUsername({ username: un.username, context: 'UsernameChange' });
-      if (v && v.code !== 0) return setUnMsg(v.message || 'Username is not available.');
+      if (v && v.code !== 0) return setUnMsg({ ok: false, text: v.message || 'Username is not available.' });
       await changeUsername({ username: un.username, password: un.password });
-      setUnMsg('Username changed. Refresh to see the update.');
-    } catch (err) { setUnMsg((err as Error).message); }
+      setUnMsg({ ok: true, text: 'Username changed. Refresh to see the update.' });
+    } catch (err) { setUnMsg({ ok: false, text: (err as Error).message }); }
   };
 
   return (
@@ -94,7 +94,7 @@ export default function AccountPage() {
             <form onSubmit={doUsername} className="flex flex-col gap-2">
               <Field label="New username"><input className={input} value={un.username} onChange={(e) => setUn({ ...un, username: e.target.value })} /></Field>
               <Field label="Password"><input type="password" className={input} value={un.password} onChange={(e) => setUn({ ...un, password: e.target.value })} /></Field>
-              {unMsg ? <p className="text-sm text-text-muted">{unMsg}</p> : null}
+              {unMsg ? <p className={`text-sm ${unMsg.ok ? 'text-positive' : 'text-negative'}`}>{unMsg.text}</p> : null}
               <div><Button size="sm" type="submit">Change Username</Button></div>
             </form>
           </Card>
@@ -105,7 +105,7 @@ export default function AccountPage() {
               <Field label="Current password"><input type="password" className={input} value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} /></Field>
               <Field label="New password"><input type="password" className={input} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} /></Field>
               <Field label="Confirm new password"><input type="password" className={input} value={pw.confirm} onChange={(e) => setPw({ ...pw, confirm: e.target.value })} /></Field>
-              {pwMsg ? <p className="text-sm text-text-muted">{pwMsg}</p> : null}
+              {pwMsg ? <p className={`text-sm ${pwMsg.ok ? 'text-positive' : 'text-negative'}`}>{pwMsg.text}</p> : null}
               <div><Button size="sm" type="submit">Change Password</Button></div>
             </form>
           </Card>

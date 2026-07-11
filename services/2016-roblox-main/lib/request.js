@@ -7,7 +7,7 @@ const getFullUrl = (apiSite, fullUrl) => {
 }
 
 const getBaseUrl = () => {
-  return config.publicRuntimeConfig.backend.baseUrl;
+  return config.publicRuntimeConfig.backend.baseUrl.replace(/\/+$/, '');
 }
 
 const getUrlWithProxy = (url) => {

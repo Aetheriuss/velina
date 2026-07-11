@@ -1221,8 +1221,6 @@ public class AdminApiController : ControllerBase
     [HttpPost("deletebadge"), StaffFilter(Access.DeleteUserBadge)]
     public async Task DeleteUserBadge([Required, FromBody] GiveBadgeRequest request)
     {
-        if (await IsStaff(request.userId) && !StaffFilter.IsOwner(userSession.userId))
-            throw new StaffException("Cannot modify badges for this user");
         await db.ExecuteAsync("DELETE FROM user_badge WHERE user_id = :user_id AND badge_id = :badge_id", new
         {
             user_id = request.userId,
@@ -1739,10 +1737,10 @@ Thank you for your understanding,
 
         if (isPackage)
         {
-            packageAssetIds = request.packageAssetIds.Split(",").Select(long.Parse);
             // validate
             if (request.packageAssetIds == null)
                 throw new StaffException("Must specify assetIds when creating a package");
+            packageAssetIds = request.packageAssetIds.Split(",").Select(long.Parse);
             var packages = (await services.assets.MultiGetAssetDeveloperDetails(packageAssetIds)).ToList();
             var result = new Dictionary<Type, int>();
             foreach (var item in packages)

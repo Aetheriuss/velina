@@ -22,8 +22,8 @@ export default function ManageBadgesPage() {
   const [addBadge, setAddBadge] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
 
-  const give = async () => { if (!addBadge) return; setMsg(null); try { await adminPost('/givebadge', { userId, badgeId: parseInt(addBadge, 10) }); setMsg('Badge given.'); refetch(); } catch (e) { setMsg((e as Error).message); } };
-  const remove = async (id: number) => { setMsg(null); try { await adminPost('/deletebadge', { userId, badgeId: id }); refetch(); } catch (e) { setMsg((e as Error).message); } };
+  const give = async () => { if (!addBadge) return; setMsg(null); try { await adminPost('/givebadge', { userId: Number(userId), badgeId: parseInt(addBadge, 10) }); setMsg('Badge given.'); refetch(); } catch (e) { setMsg((e as Error).message); } };
+  const remove = async (id: number) => { setMsg(null); try { await adminPost('/deletebadge', { userId: Number(userId), badgeId: id }); refetch(); } catch (e) { setMsg((e as Error).message); } };
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4">

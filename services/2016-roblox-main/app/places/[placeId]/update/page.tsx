@@ -7,8 +7,9 @@ import { multiGetPlaceDetails } from '../../../../services/games';
 import { updateAsset, setUniverseMaxPlayers, uploadAssetVersion } from '../../../../services/develop';
 import Card from '../../../../components/ui/Card';
 import Button from '../../../../components/ui/Button';
+import GameIcon from './_components/GameIcon';
 
-const GENRES = ['All', 'Building', 'Horror', 'Town and City', 'Military', 'Comedy', 'Medieval', 'Adventure', 'Sci-Fi', 'Naval', 'FPS', 'RPG', 'Sports', 'Fighting', 'Western'];
+const GENRES = ['All', 'Town and City', 'Building', 'Horror', 'Military', 'Comedy', 'Medieval', 'Adventure', 'Sci-Fi', 'Naval', 'FPS', 'RPG', 'Sports', 'Fighting', 'Western', 'Skate park'];
 
 export default function UpdatePlacePage() {
   const params = useParams();
@@ -93,6 +94,8 @@ export default function UpdatePlacePage() {
         {msg ? <p className="text-sm text-text-muted">{msg}</p> : null}
         <div><Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button></div>
       </Card>
+
+      {place.universeId ? <GameIcon universeId={place.universeId} /> : null}
 
       <Card className="flex flex-col gap-2">
         <h2 className="font-semibold">Upload Place File</h2>

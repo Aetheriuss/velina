@@ -32,7 +32,7 @@ export default function BanUserPage() {
     setMsg(null);
     try {
       const expires = expiryDays == null ? '' : dayjs().add(expiryDays, 'day').toISOString();
-      await adminPost('/ban', { userId, reason, internalReason, expires });
+      await adminPost('/ban', { userId: Number(userId), reason, internalReason, expires });
       router.push(`/admin/manage-user/${userId}`);
     } catch (e) { setMsg((e as Error).message); setBusy(false); }
   };

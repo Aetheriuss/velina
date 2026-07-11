@@ -18,7 +18,7 @@ export default function ManageUsernamesPage() {
   const del = async () => {
     if (!selected) return;
     setMsg(null);
-    try { await adminPost('/user/usernames/delete', { userId, username: selected }); setMsg('Username deleted.'); refetch(); }
+    try { await adminPost('/user/usernames/delete', { userId: Number(userId), username: selected }); setMsg('Username deleted.'); refetch(); }
     catch (e) { setMsg((e as Error).message); }
   };
 

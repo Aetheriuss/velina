@@ -9,14 +9,14 @@ import Button from '../../../../components/ui/Button';
 
 export default function CreatePlayerPage() {
   const router = useRouter();
-  const { is } = useAdminPerms();
+  const { hasPermission } = useAdminPerms();
   const [userId, setUserId] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  if (!is('admin')) return <p className="text-text-muted">Only admins can create players.</p>;
+  if (!hasPermission('CreateUser')) return <p className="text-text-muted">You do not have the CreateUser permission.</p>;
 
   const submit = async () => {
     setBusy(true);

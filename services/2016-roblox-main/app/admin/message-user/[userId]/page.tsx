@@ -25,7 +25,7 @@ export default function MessageUserPage() {
     if (/\[.*\]/.test(body)) return setMsg('Please replace all [placeholders] before sending.');
     setBusy(true);
     setMsg(null);
-    try { await adminPost('/user/create-message', { userId, subject, body }); router.push(`/admin/manage-user/${userId}`); }
+    try { await adminPost('/user/create-message', { userId: Number(userId), subject, body }); router.push(`/admin/manage-user/${userId}`); }
     catch (e) { setMsg((e as Error).message); setBusy(false); }
   };
 
