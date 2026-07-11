@@ -37,8 +37,8 @@ public class RobloxPlayerCorsMiddleware
         var host = SiteHost;
         var cdn = CdnOrigin;
 
-        // hCaptcha is required for the captcha widget; the site's own wss origin carries SignalR chat.
-        var connectSrc = "'self' https://hcaptcha.com https://*.hcaptcha.com";
+        // The site's own wss origin carries SignalR chat.
+        var connectSrc = "'self'";
         if (host != null)
             connectSrc += " wss://" + host;
         if (cdn != null)
@@ -53,10 +53,13 @@ public class RobloxPlayerCorsMiddleware
             imgSrc += " " + cdn;
 
         // unsafe-eval is required by Next.js; bootstrap JS is loaded from jsDelivr.
+        // unsafe-inline is required by the App Router: RSC flight data arrives as inline
+        // self.__next_f.push() scripts whose content varies per request, so neither hashes
+        // nor build-time nonces can allowlist them.
         var scriptSrc =
-            "'unsafe-eval' 'self' https://hcaptcha.com https://*.hcaptcha.com https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js";
+            "'unsafe-eval' 'unsafe-inline' 'self' https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js";
 
-        return "default-src 'self'; img-src " + imgSrc + "; child-src 'self'; script-src " + scriptSrc + "; frame-src 'self' https://hcaptcha.com https://*.hcaptcha.com; style-src 'unsafe-inline' 'self' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css; font-src 'self' fonts.gstatic.com; connect-src " + connectSrc + "; worker-src 'self'; frame-ancestors 'self';";
+        return "default-src 'self'; img-src " + imgSrc + "; child-src 'self'; script-src " + scriptSrc + "; frame-src 'self'; style-src 'unsafe-inline' 'self' https://fonts.googleapis.com https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css; font-src 'self' fonts.gstatic.com; connect-src " + connectSrc + "; worker-src 'self'; frame-ancestors 'self';";
     }
 
     public async Task InvokeAsync(HttpContext ctx)

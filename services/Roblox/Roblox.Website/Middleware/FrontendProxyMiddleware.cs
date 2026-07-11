@@ -154,21 +154,34 @@ public class FrontendProxyMiddleware
         frontendTimer.Stop();
     }
 
-    private static Dictionary<string, Tuple<string,string,string,int>> pageCache { get; set; } = new();
+    private record CachedPage(string? ContentType, string Body, string? Location, int StatusCode, DateTime CachedAt);
+
+    private static Dictionary<string, CachedPage> pageCache { get; set; } = new();
     private static Mutex pageCacheMux { get; set; } = new();
 
-    private Tuple<string,string,string,int>? GetPageFromCache(string url)
+    // Entries must expire or a frontend redeploy leaves whatever was cached pre-deploy frozen at
+    // the old build (old HTML referencing deleted /_next chunks → unstyled, never-hydrating pages).
+    // Hashed /_next/static assets are immutable so they can live long; documents converge fast.
+    private static TimeSpan GetCacheTtl(string url) =>
+        url.StartsWith("/_next/static/") ? TimeSpan.FromHours(24) : TimeSpan.FromSeconds(60);
+
+    private CachedPage? GetPageFromCache(string url)
     {
         pageCacheMux.WaitOne();
-        if (pageCache.ContainsKey(url))
+        try
         {
-            var value = pageCache[url];
-            pageCacheMux.ReleaseMutex();
-            return value;
+            if (pageCache.TryGetValue(url, out var value))
+            {
+                if (DateTime.UtcNow - value.CachedAt < GetCacheTtl(url))
+                    return value;
+                pageCache.Remove(url);
+            }
+            return null;
         }
-        pageCacheMux.ReleaseMutex();
-
-        return null;
+        finally
+        {
+            pageCacheMux.ReleaseMutex();
+        }
     }
 
     public async Task InvokeAsync(HttpContext ctx)
@@ -186,9 +199,9 @@ public class FrontendProxyMiddleware
         var cached = GetPageFromCache(requestUrl);
         if (cached != null)
         {
-            ctx.Response.Headers.Add("x-cache-dbg", "f-2016; memv1;");
-            await HandleProxyResult(requestUrl, cached.Item1, cached.Item4, cached.Item3, ctx);
-            await ctx.Response.WriteAsync(cached.Item2);
+            ctx.Response.Headers.Add("x-cache-dbg", "f-2016; memv2;");
+            await HandleProxyResult(requestUrl, cached.ContentType, cached.StatusCode, cached.Location, ctx);
+            await ctx.Response.WriteAsync(cached.Body);
             return;
         }
 #endif
@@ -209,15 +222,30 @@ public class FrontendProxyMiddleware
         if (cacheable)
         {
             pageCacheMux.WaitOne();
-            if (pageCache.Count < 1000)
+            try
             {
-                pageCache[requestUrl] = new(contentType, cacheStr, locationHeader, 200);
+                if (pageCache.Count >= 1000)
+                {
+                    // Prune expired entries before giving up — otherwise dead entries pin the cap.
+                    var now = DateTime.UtcNow;
+                    foreach (var key in pageCache
+                                 .Where(kv => now - kv.Value.CachedAt >= GetCacheTtl(kv.Key))
+                                 .Select(kv => kv.Key).ToList())
+                        pageCache.Remove(key);
+                }
+                if (pageCache.Count < 1000)
+                {
+                    pageCache[requestUrl] = new CachedPage(contentType, cacheStr, locationHeader, 200, DateTime.UtcNow);
+                }
+                else
+                {
+                    Writer.Info(LogGroup.PerformanceDebugging, "2016 frontend page cache is full, not saving {0}", requestUrl);
+                }
             }
-            else
+            finally
             {
-                Writer.Info(LogGroup.PerformanceDebugging, "2016 frontend page cache is full, not saving {0}", requestUrl);
+                pageCacheMux.ReleaseMutex();
             }
-            pageCacheMux.ReleaseMutex();
         }
         await HandleProxyResult(requestUrl, contentType, (int)result.StatusCode, locationHeader, ctx);
         await mem.CopyToAsync(ctx.Response.BodyWriter.AsStream());
